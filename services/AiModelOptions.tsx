@@ -1,0 +1,27 @@
+export default [
+    {
+        id:1,
+        name:'OpenAI',
+        logo:'/chatgpt.png',
+    },
+    {
+        id:2,
+        name:'Claude',
+        logo:'/anthropic.png',
+    },
+    {
+        id:3,
+        name:'Deepseek',
+        logo:'/deepseek.png',
+    },
+    {
+        id:4,
+        name:'Mistral',
+        logo:'/mistral.png',
+    },
+    {
+        id:5,
+        name:'Google:Gemini',
+        logo:'/google.png',
+    }
+]
