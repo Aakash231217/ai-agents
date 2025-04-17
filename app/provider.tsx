@@ -6,13 +6,8 @@ import { ConvexProvider, ConvexReactClient } from 'convex/react';
 import { AuthContext } from '@/context/AuthContext';
 import { useState } from 'react';
 
-// Define UserType interface
-interface UserType {
-  name?: string;
-  email?: string;
-  picture?: string;
-  // Add other user properties as needed
-}
+// Import UserType from AuthContext to ensure type compatibility
+import type { UserType } from '@/context/AuthContext';
 
 function Provider({
   children,
