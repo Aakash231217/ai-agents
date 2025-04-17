@@ -2,7 +2,7 @@
 import { Id } from '@/convex/_generated/dataModel';
 import { createContext, useState, Dispatch, SetStateAction } from 'react';
 
-interface UserType {
+export interface UserType {
   _id: Id<"users">;
   name?: string;
   email?: string;
