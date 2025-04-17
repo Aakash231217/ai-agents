@@ -48,6 +48,7 @@ export default <Config>{
   },
   plugins: [
     require("tailwindcss-animate"),
+    require("tailwind-scrollbar-hide")
     // Add other plugins here
   ],
   container: {
