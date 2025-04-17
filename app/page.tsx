@@ -56,7 +56,7 @@ export default function Home() {
             </div>
             <h3 className="text-xl font-bold mb-3">Custom Assistants</h3>
             <p className="text-slate-300">
-              Build AI assistants tailored to your specific business needs and workflows.
+              Build AI assistants tailored to your specific needs and workflows.
             </p>
           </div>
 
@@ -65,7 +65,7 @@ export default function Home() {
               <Zap className="h-6 w-6 text-blue-400" />
             </div>
             <h3 className="text-xl font-bold mb-3">Lightning Fast</h3>
-            <p className="text-slate-300">Deploy in minutes with our intuitive interface and pre-built templates.</p>
+            <p className="text-slate-300">Build in minutes with our intuitive interface and pre-built templates.</p>
           </div>
 
           <div className="bg-white/5 backdrop-blur-lg p-8 rounded-2xl border border-white/10 hover:border-pink-500/50 transition-all hover:shadow-lg hover:shadow-pink-500/10">
