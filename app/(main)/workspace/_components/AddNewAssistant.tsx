@@ -122,14 +122,15 @@ function AddNewAssistant({children}: any) {
     return (
         <Dialog>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent className="sm:max-w-[600px] w-[95%] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
                 <DialogHeader>
                     <DialogTitle className="text-lg font-medium">Add New Assistant</DialogTitle>
                 </DialogHeader>
                 
-                <div className="grid grid-cols-5 gap-4">
-                    {/* Left sidebar - Assistant list */}
-                    <div className="col-span-2 border-r pr-4 max-h-[400px] overflow-y-auto">
+                {/* Responsive grid layout */}
+                <div className="flex flex-col md:grid md:grid-cols-5 md:gap-4 gap-6">
+                    {/* Assistant list - full width on mobile, sidebar on desktop */}
+                    <div className="md:col-span-2 border-b md:border-b-0 md:border-r pb-4 md:pb-0 md:pr-4 max-h-[250px] md:max-h-[400px] overflow-y-auto">
                         <Button 
                             variant="secondary" 
                             size="sm" 
@@ -168,9 +169,9 @@ function AddNewAssistant({children}: any) {
                         </div>
                     </div>
                     
-                    {/* Right content - Assistant details */}
-                    <div className="col-span-3 pl-2 flex flex-col items-center justify-start">
-                        <div className="mb-6">
+                    {/* Assistant details - full width on mobile, right column on desktop */}
+                    <div className="md:col-span-3 md:pl-2 flex flex-col items-center justify-start">
+                        <div className="mb-4 md:mb-6">
                             {selectedAssistant && (
                                 <AssistantAvatar selectedImage={(v: string) => onHandleInputChange('image', v)}>
                                     <Image 
@@ -193,25 +194,25 @@ function AddNewAssistant({children}: any) {
                             />
                             <Input 
                                 placeholder="Title"
-                                className='w-full'
+                                className="w-full"
                                 value={selectedAssistant?.title}
                                 onChange={(event) => onHandleInputChange('title', event.target.value)}
                             />
                         </div>
-                        <div className='mt-4'>
+                        <div className="mt-4 w-full">
                             <h2 className="text-sm text-gray-500">Model:</h2>
                             <Select 
                                 defaultValue={selectedAssistant?.aiModelId || "OpenAI"}
                                 onValueChange={(value) => onHandleInputChange('aiModelId', value)}
                             >
-                                <SelectTrigger className='w-[200px]'>
+                                <SelectTrigger className="w-full md:w-[200px]">
                                     <SelectValue placeholder="Select a model" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {AiModelOptions.map((model, index) => (
                                         <SelectItem value={model.name} key={index}>
-                                            <div className='flex gap-2 items-center m-1'> 
-                                                <Image src={model.logo} alt={model.name} height={20} width={20} className='rounded-md'/>
+                                            <div className="flex gap-2 items-center m-1"> 
+                                                <Image src={model.logo} alt={model.name} height={20} width={20} className="rounded-md"/>
                                                 <h2>{model.name}</h2>
                                             </div>
                                         </SelectItem>
@@ -219,12 +220,12 @@ function AddNewAssistant({children}: any) {
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className='mt-5'>
-                            <h2 className='text-gray-500'>Instruction</h2>
+                        <div className="mt-5 w-full">
+                            <h2 className="text-gray-500">Instruction</h2>
                             <Textarea 
-                                placeholder='Add Instructions'
+                                placeholder="Add Instructions"
                                 value={selectedAssistant.userInstruction}
-                                className='h-[200px] w-[300px]'
+                                className="h-[150px] md:h-[200px] w-full"
                                 onChange={(event) => {
                                     // Update both instruction fields to ensure consistency
                                     const value = event.target.value;
@@ -239,8 +240,8 @@ function AddNewAssistant({children}: any) {
                                 Describe how your assistant should behave and what knowledge it should have.
                             </p>
                         </div>
-                        <div className='flex gap-5 justify-end mt-10'> 
-                            <Button variant={'secondary'}>
+                        <div className="flex gap-3 md:gap-5 justify-end mt-6 md:mt-10 w-full"> 
+                            <Button variant="secondary">
                                 Cancel
                             </Button>
                             <Button 
@@ -257,5 +258,4 @@ function AddNewAssistant({children}: any) {
         </Dialog>
     )
 }
-
-export default AddNewAssistant
+    export default AddNewAssistant
