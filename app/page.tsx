@@ -48,19 +48,6 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* Features Section */}
-        <div className="mt-32 grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-white/5 backdrop-blur-lg p-8 rounded-2xl border border-white/10 hover:border-purple-500/50 transition-all hover:shadow-lg hover:shadow-purple-500/10">
-            <div className="bg-purple-500/20 p-3 rounded-xl w-fit mb-6">
-              <Bot className="h-6 w-6 text-purple-400" />
-            </div>
-            <h3 className="text-xl font-bold mb-3">Custom Assistants</h3>
-            <p className="text-slate-300">
-              Build AI assistants tailored to your specific needs and workflows.
-            </p>
-          </div>
-        </div>
-
         <div className="mt-20 flex flex-col items-center">
           <h2 className="text-3xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">
             How To Use It?
@@ -75,6 +62,34 @@ export default function Home() {
                 className="w-full h-full"
               ></iframe>
             </div>
+          </div>
+        </div>
+
+        <div className="mt-32 grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="bg-white/5 backdrop-blur-lg p-8 rounded-2xl border border-white/10 hover:border-purple-500/50 transition-all hover:shadow-lg hover:shadow-purple-500/10">
+            <div className="bg-purple-500/20 p-3 rounded-xl w-fit mb-6">
+              <Bot className="h-6 w-6 text-purple-400" />
+            </div>
+            <h3 className="text-xl font-bold mb-3">Custom Assistants</h3>
+            <p className="text-slate-300">
+              Build AI assistants tailored to your specific needs and workflows.
+            </p>
+          </div>
+
+          <div className="bg-white/5 backdrop-blur-lg p-8 rounded-2xl border border-white/10 hover:border-blue-500/50 transition-all hover:shadow-lg hover:shadow-blue-500/10">
+            <div className="bg-blue-500/20 p-3 rounded-xl w-fit mb-6">
+              <Zap className="h-6 w-6 text-blue-400" />
+            </div>
+            <h3 className="text-xl font-bold mb-3">Lightning Fast</h3>
+            <p className="text-slate-300">Build in minutes with our intuitive interface and pre-built templates.</p>
+          </div>
+
+          <div className="bg-white/5 backdrop-blur-lg p-8 rounded-2xl border border-white/10 hover:border-pink-500/50 transition-all hover:shadow-lg hover:shadow-pink-500/10">
+            <div className="bg-pink-500/20 p-3 rounded-xl w-fit mb-6">
+              <Code className="h-6 w-6 text-pink-400" />
+            </div>
+            <h3 className="text-xl font-bold mb-3">No Code Required</h3>
+            <p className="text-slate-300">Create sophisticated AI assistants without writing a single line of code.</p>
           </div>
         </div>
 
