@@ -59,25 +59,26 @@ export default function Home() {
               Build AI assistants tailored to your specific needs and workflows.
             </p>
           </div>
+        </div>
 
-          <div className="bg-white/5 backdrop-blur-lg p-8 rounded-2xl border border-white/10 hover:border-blue-500/50 transition-all hover:shadow-lg hover:shadow-blue-500/10">
-            <div className="bg-blue-500/20 p-3 rounded-xl w-fit mb-6">
-              <Zap className="h-6 w-6 text-blue-400" />
+        <div className="mt-20 flex flex-col items-center">
+          <h2 className="text-3xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">
+            How To Use It?
+          </h2>
+          <div className="w-full max-w-4xl bg-white/5 backdrop-blur-lg rounded-2xl border border-white/10 p-6 hover:shadow-lg hover:shadow-purple-500/10 transition-all">
+            <div className="aspect-video w-full rounded-xl overflow-hidden">
+              <iframe
+                src="https://www.youtube.com/embed/EZcuXyNzIU0"
+                title="YouTube video player"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full"
+              ></iframe>
             </div>
-            <h3 className="text-xl font-bold mb-3">Lightning Fast</h3>
-            <p className="text-slate-300">Build in minutes with our intuitive interface and pre-built templates.</p>
-          </div>
-
-          <div className="bg-white/5 backdrop-blur-lg p-8 rounded-2xl border border-white/10 hover:border-pink-500/50 transition-all hover:shadow-lg hover:shadow-pink-500/10">
-            <div className="bg-pink-500/20 p-3 rounded-xl w-fit mb-6">
-              <Code className="h-6 w-6 text-pink-400" />
-            </div>
-            <h3 className="text-xl font-bold mb-3">No Code Required</h3>
-            <p className="text-slate-300">Create sophisticated AI assistants without writing a single line of code.</p>
           </div>
         </div>
 
-        {/* 3D Illustration */}
+        {/* Existing 3D Illustration Section (Remains Unchanged) */}
         <div className="mt-20 flex justify-center">
           <div className="relative w-full max-w-2xl h-80 bg-gradient-to-r from-purple-900/40 to-blue-900/40 rounded-2xl overflow-hidden border border-white/10">
             <div className="absolute inset-0 flex items-center justify-center">
