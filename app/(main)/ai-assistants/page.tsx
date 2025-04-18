@@ -1,4 +1,4 @@
-"use client";
+"use client"; 
 import { Button } from '@/components/ui/button';
 import AiAssistantList from '@/services/AiAssistantList';
 import React, { useContext, useEffect, useState } from 'react';
@@ -9,96 +9,132 @@ import { useConvex, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { AuthContext } from '@/context/AuthContext';
 import { Id } from '@/convex/_generated/dataModel';
-import { Loader, Loader2Icon, Router } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-
-export type ASSISTANT={
-  id:number;
-  name:string;
-  title:string;
-  image:string;
-  instruction:string;
-  userInstruction:string;
-  sampleQuestions:string[];
-  aiModelId?:string
+export type ASSISTANT = {
+  id: number;
+  name: string;
+  title: string;
+  image: string;
+  instruction: string;
+  userInstruction: string;
+  sampleQuestions: string[];
+  aiModelId?: string;
 }
 
 function AIAssistants() {
   const router = useRouter();
+  const [selectedAssistant, setSelectedAssistant] = useState<ASSISTANT[]>([]);
+  const insertAssistant = useMutation(api.userAiAssistant.InsertSelectedAssistants);
+  const { user } = useContext(AuthContext);
+  const [loading, setLoading] = useState(false);
+  const convex = useConvex();
 
-  const [selectedAssistant, setSelectedAssistant]=useState<ASSISTANT[]>([]);
-  const insertAssistant = useMutation(api.userAiAssistant.InsertSelectedAssistants)
-  const {user}=useContext(AuthContext);
-  const [loading,setLoading]=useState(false);
-  const convex =  useConvex();
-  useEffect(()=>{user && GetUserAssistants()},[user])
-  const GetUserAssistants=async()=>{
+  useEffect(() => {
+    if (user) {
+      GetUserAssistants();
+    }
+  }, [user]);
+
+  const GetUserAssistants = async () => {
     if (!user) return;
-    const result = await convex.query(api.userAiAssistant.GetAllUserAssistants,{
-      uid:user._id
-    })
-    if(result.length>0){
-      //navigate to new screen;
-      router.replace('/workspace');
-      return 
-
+    try {
+      const result = await convex.query(api.userAiAssistant.GetAllUserAssistants, {
+        uid: user._id
+      });
+      
+      if (result.length > 0) {
+        router.replace('/workspace');
+      }
+    } catch (error) {
+      console.error("Error fetching user assistants:", error);
     }
   }
-  const onSelect=(assistant:ASSISTANT)=>{
-      const item = selectedAssistant.find((item:ASSISTANT)=>item.id==assistant.id)
-      if (item){
-        setSelectedAssistant(selectedAssistant.filter((item:ASSISTANT)=>item.id!=assistant.id))
-        return;
-      }
-      setSelectedAssistant(prev=>[...prev,assistant]);
+
+  const onSelect = (assistant: ASSISTANT) => {
+    const item = selectedAssistant.find((item: ASSISTANT) => item.id === assistant.id);
+    if (item) {
+      setSelectedAssistant(selectedAssistant.filter((item: ASSISTANT) => item.id !== assistant.id));
+    } else {
+      setSelectedAssistant(prev => [...prev, assistant]);
     }
-    const isAssistantSelected=(assistant:ASSISTANT)=>{
-      const item = selectedAssistant.find((item:ASSISTANT)=>item.id==assistant.id)
-      return item?true:false; 
+  }
+
+  const isAssistantSelected = (assistant: ASSISTANT) => {
+    return selectedAssistant.some((item: ASSISTANT) => item.id === assistant.id);
+  }
+
+  const OnClickContinue = async () => {
+    if (!user || !user._id) {
+      console.error("User is not logged in or missing ID");
+      return;
     }
 
-    const OnClickContinue=async ()=>{
+    try {
       setLoading(true);
-      if (!user || !user._id) {
-        console.error("User is not logged in or missing ID");
-        return;
-      }
       
-      const result = await insertAssistant({
+      await insertAssistant({
         records: selectedAssistant,
-        uid: user._id as Id<"users"> // Cast to the appropriate Convex ID type
+        uid: user._id as Id<"users">
       });
+      
+      // Navigate to workspace after successful insertion
+      router.push('/workspace');
+    } catch (error) {
+      console.error("Error inserting assistants:", error);
+    } finally {
       setLoading(false);
-      console.log(result);
     }
+  }
+
   return (
-    <>
-      <div className='px-10 mt-20 md:px-28 lg:px-36 xl:px-48'>
-        <div className='flex justify-between items-center'>
+    <div className="flex flex-col min-h-screen">
+      <div className="px-4 sm:px-6 md:px-10 lg:px-16 xl:px-20 mt-8 md:mt-16">
+        <div className="flex flex-col space-y-4">
           <div>
-            <h2 className='text-3xl font-bold'>Welcome to the world of AI Assistants</h2>
-            <p className='text-xl mt-2'>Choose your AI companion to simplify your tasks</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-center sm:text-left">Welcome to the world of AI Assistants</h2>
+            <p className="text-lg mt-2 text-center sm:text-left">Choose your AI companion to simplify your tasks</p>
+          </div>
+          
+          <div className="flex justify-center sm:justify-start mt-4 mb-6">
+            <Button 
+              disabled={selectedAssistant.length === 0 || loading} 
+              onClick={OnClickContinue}
+              className="w-full sm:w-auto"
+            >
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Continue
+            </Button>
           </div>
         </div>
-
-        <Button disabled={selectedAssistant?.length==0 || loading} onClick={OnClickContinue}>{loading && <Loader2Icon className='animate-spin'/>}Continue</Button>
       </div>
-      <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 mt-5' >
-        {AiAssistantList.map((assistant, index) => (
-          <BlurFade key={assistant.image} delay={0.25+index*0.05} inView>
-          <div key={index} className='hover:border p-3 rounded-xl hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer relative' 
-          onClick={()=>onSelect(assistant)}>
-            <Checkbox className='absolute m-2' checked={isAssistantSelected(assistant)}/>
-            <Image src={assistant.image} alt={assistant.title} width={500} height={300}
-            className='rounded-xl w-full h-[200px] object-cover' />
-            <h2 className='text-center font-bold text-lg'>{assistant.name}</h2>
 
-<h3 className='text-center text-gray-600 dark:text-gray-300'>{assistant.title}</h3>          </div>
-</BlurFade>
+      <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 px-4 sm:px-6 md:px-10 lg:px-16 xl:px-20 pb-10">
+        {AiAssistantList.map((assistant, index) => (
+          <BlurFade key={assistant.id} delay={0.25 + index * 0.05} inView>
+            <div 
+              className="border border-transparent hover:border-gray-300 dark:hover:border-gray-600 p-2 sm:p-3 rounded-xl hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer relative"
+              onClick={() => onSelect(assistant)}
+            >
+              <Checkbox 
+                className="absolute top-3 left-3 z-10" 
+                checked={isAssistantSelected(assistant)}
+              />
+              <Image 
+                src={assistant.image} 
+                alt={assistant.title} 
+                width={500} 
+                height={300}
+                className="rounded-xl w-full h-[140px] sm:h-[200px] object-cover" 
+              />
+              <h2 className="text-center font-bold text-base sm:text-lg mt-2">{assistant.name}</h2>
+              <h3 className="text-center text-sm sm:text-base text-gray-600 dark:text-gray-300">{assistant.title}</h3>
+            </div>
+          </BlurFade>
         ))}
       </div>
-    </>
+    </div>
   );
 }
 
