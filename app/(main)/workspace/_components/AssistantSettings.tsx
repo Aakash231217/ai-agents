@@ -139,7 +139,7 @@ function AssistantSettings() {
                     onChange={(e) => onHandleInputChange('userInstruction', e.target.value)} 
                 />
             </div>
-            <div className='absolute bottom-10 right-0 flex gap-5'>
+            <div className='absolute bottom-16 right-0 flex gap-5'>
                 <Button onClick={OnSave} disabled={loading}>
                     {loading ? <Loader2Icon className='animate-pulse mr-2'/> : <Save className='mr-2'/>}
                     Save

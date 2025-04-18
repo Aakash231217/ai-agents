@@ -119,7 +119,7 @@ const onSendMessage = async () => {
                     </div>
             ))}
         </div>
-        <div className='flex justify-between p-5 gap-5 absolute bottom-5 w-[89%]'>
+        <div className='flex justify-between p-5 gap-5 absolute bottom-12 w-[89%]'>
             <Input placeholder="Start Typing Here..."
             value={input}
             disabled={loading}
