@@ -89,8 +89,10 @@ function AIAssistants() {
   }
 
   return (
-    <main className="flex flex-col w-full min-h-screen pb-20">
-      <div className="px-4 sm:px-6 md:px-10 lg:px-16 xl:px-20 mt-8 md:mt-16 w-full">
+    // Use a regular div with no height constraints to allow full content scrolling
+    <div className="w-full pb-24 sm:pb-16">
+      {/* Header section */}
+      <div className="px-4 sm:px-6 md:px-10 lg:px-16 xl:px-20 mt-8 md:mt-16">
         <div className="flex flex-col space-y-4">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold text-center sm:text-left">Welcome to the world of AI Assistants</h2>
@@ -110,9 +112,10 @@ function AIAssistants() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 px-4 sm:px-6 md:px-10 lg:px-16 xl:px-20 pb-10 overflow-y-auto">
+      {/* Grid section - with no height constraints */}
+      <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 px-4 sm:px-6 md:px-10 lg:px-16 xl:px-20">
         {AiAssistantList.map((assistant, index) => (
-          <BlurFade key={assistant.id} delay={0.25 + index * 0.05} inView>
+          <BlurFade key={assistant.id || index} delay={0.25 + index * 0.05} inView>
             <div 
               className="border border-transparent hover:border-gray-300 dark:hover:border-gray-600 p-2 sm:p-3 rounded-xl hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer relative"
               onClick={() => onSelect(assistant)}
@@ -144,10 +147,10 @@ function AIAssistants() {
           className="w-full"
         >
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Continue with {selectedAssistant.length} assistant{selectedAssistant.length !== 1 ? 's' : ''}
+          Continue {selectedAssistant.length > 0 && `(${selectedAssistant.length})`}
         </Button>
       </div>
-    </main>
+    </div>
   );
 }
 
