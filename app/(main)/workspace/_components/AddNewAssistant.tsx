@@ -50,9 +50,6 @@ function AddNewAssistant({children}: any) {
     const setAssistant = assistantContext ? 
         (Array.isArray(assistantContext) ? assistantContext[1] : assistantContext.setAssistant) : 
         () => {}; 
-    
-    // Add state to control dialog open/close
-    const [open, setOpen] = useState(false);
 
     const onHandleInputChange = (field: string, value: string) => {
         setSelectedAssistant((prev: any) => {
@@ -99,17 +96,6 @@ function AddNewAssistant({children}: any) {
             
             toast.success('New Assistant Added');
             setAssistant(null);
-            
-            // Close the dialog after successful addition
-            setOpen(false);
-            
-            // Reset form to default
-            setSelectedAssistant({
-                ...DEFAULT_ASSISTANT,
-                instruction: '',
-                userInstruction: '',
-            });
-            
         } catch (error) {
             console.error("Error adding assistant:", error);
             toast.error('Failed to add assistant');
@@ -134,8 +120,8 @@ function AddNewAssistant({children}: any) {
     };
     
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild onClick={() => setOpen(true)}>{children}</DialogTrigger>
+        <Dialog>
+            <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent className="sm:max-w-[600px] w-[95%] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
                 <DialogHeader>
                     <DialogTitle className="text-lg font-medium">Add New Assistant</DialogTitle>
@@ -255,7 +241,7 @@ function AddNewAssistant({children}: any) {
                             </p>
                         </div>
                         <div className="flex gap-3 md:gap-5 justify-end mt-6 md:mt-10 w-full"> 
-                            <Button variant="secondary" onClick={() => setOpen(false)}>
+                            <Button variant="secondary">
                                 Cancel
                             </Button>
                             <Button 
@@ -272,5 +258,4 @@ function AddNewAssistant({children}: any) {
         </Dialog>
     )
 }
-
-export default AddNewAssistant
+    export default AddNewAssistant
