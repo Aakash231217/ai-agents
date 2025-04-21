@@ -1,5 +1,5 @@
 "use client"
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import {
     Dialog,
     DialogContent,
@@ -16,18 +16,14 @@ import { Select } from '@radix-ui/react-select'
 import { SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import AiModelOptions from '@/services/AiModelOptions'
 import { Textarea } from '@/components/ui/textarea'
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover"
 import AssistantAvatar from './AssistantAvatar'
-import { useMutation } from 'convex/react'
+import { useMutation, useQuery } from 'convex/react'
 import { api } from '@/convex/_generated/api'
 import { AuthContext } from '@/context/AuthContext'
 import toast from 'react-hot-toast'
 import { AssistantContext } from '@/context/AssistantContext'
 import { Loader2Icon } from 'lucide-react'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 const DEFAULT_ASSISTANT = {
     image: '/bug-fixer.avif',
@@ -40,16 +36,34 @@ const DEFAULT_ASSISTANT = {
     aiModelId: 'OpenAI'
 }
 
-function AddNewAssistant({children}: any) {
+function AddNewAssistant({ children, onAssistantAdded }: { children: React.ReactNode, onAssistantAdded?: () => void }) {
     const [selectedAssistant, setSelectedAssistant] = useState<ASSISTANT>(DEFAULT_ASSISTANT)
     const AddAssistant = useMutation(api.userAiAssistant.InsertSelectedAssistants)
-    const {user} = useContext(AuthContext);
+    const { user } = useContext(AuthContext);
     const [loading, setLoading] = useState(false);
     const assistantContext = useContext(AssistantContext);
     // Fix: Properly handle context value based on its structure
     const setAssistant = assistantContext ? 
         (Array.isArray(assistantContext) ? assistantContext[1] : assistantContext.setAssistant) : 
         () => {}; 
+    
+    // Add state to control dialog open/close
+    const [open, setOpen] = useState(false);
+    
+    // Get existing assistants to check for duplicates
+    const existingAssistants = useQuery(api.userAiAssistant.GetAllUserAssistants, 
+        user?._id ? { uid: user._id } : "skip")
+
+    // Reset form when dialog opens/closes
+    useEffect(() => {
+        if (!open) {
+            setSelectedAssistant({
+                ...DEFAULT_ASSISTANT,
+                instruction: '',
+                userInstruction: '',
+            });
+        }
+    }, [open]);
 
     const onHandleInputChange = (field: string, value: string) => {
         setSelectedAssistant((prev: any) => {
@@ -79,6 +93,18 @@ function AddNewAssistant({children}: any) {
             return;
         }
         
+        // Check for duplicates
+        if (existingAssistants) {
+            const isDuplicate = existingAssistants.some(
+                assistant => assistant.name?.toLowerCase() === selectedAssistant.name?.toLowerCase()
+            );
+            
+            if (isDuplicate) {
+                toast.error('An assistant with this name already exists');
+                return;
+            }
+        }
+        
         try {
             setLoading(true);
             
@@ -95,7 +121,15 @@ function AddNewAssistant({children}: any) {
             });
             
             toast.success('New Assistant Added');
-            setAssistant(null);
+            
+            // Refresh the assistant list
+            if (typeof onAssistantAdded === 'function') {
+                onAssistantAdded();
+            }
+            
+            // Close the dialog after successful addition
+            setOpen(false);
+            
         } catch (error) {
             console.error("Error adding assistant:", error);
             toast.error('Failed to add assistant');
@@ -120,8 +154,8 @@ function AddNewAssistant({children}: any) {
     };
     
     return (
-        <Dialog>
-            <DialogTrigger asChild>{children}</DialogTrigger>
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild onClick={() => setOpen(true)}>{children}</DialogTrigger>
             <DialogContent className="sm:max-w-[600px] w-[95%] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
                 <DialogHeader>
                     <DialogTitle className="text-lg font-medium">Add New Assistant</DialogTitle>
@@ -130,7 +164,7 @@ function AddNewAssistant({children}: any) {
                 {/* Responsive grid layout */}
                 <div className="flex flex-col md:grid md:grid-cols-5 md:gap-4 gap-6">
                     {/* Assistant list - full width on mobile, sidebar on desktop */}
-                    <div className="md:col-span-2 border-b md:border-b-0 md:border-r pb-4 md:pb-0 md:pr-4 max-h-[250px] md:max-h-[400px] overflow-y-auto">
+                    <div className="md:col-span-2 border-b md:border-b-0 md:border-r pb-4 md:pb-0 md:pr-4">
                         <Button 
                             variant="secondary" 
                             size="sm" 
@@ -147,26 +181,29 @@ function AddNewAssistant({children}: any) {
                             + Create New Assistant
                         </Button>
                         
-                        <div className="space-y-2">
-                            {AiAssistantList.map((assistant, index) => (
-                                <div 
-                                    key={index} 
-                                    className="flex items-center gap-2 p-2 rounded-md hover:bg-gray-100 cursor-pointer"
-                                    onClick={() => handleSelectAssistant(assistant)}
-                                >
-                                    <Image 
-                                        src={assistant.image} 
-                                        width={32} 
-                                        height={32} 
-                                        alt={assistant.name}
-                                        className="rounded-md object-cover"
-                                    />
-                                    <div className="text-sm">
-                                        {assistant.title}
+                        <ScrollArea className="max-h-[250px] md:max-h-[400px]">
+                            <div className="space-y-2">
+                                {AiAssistantList.map((assistant, index) => (
+                                    <div 
+                                        key={index} 
+                                        className={`flex items-center gap-2 p-2 rounded-md hover:bg-gray-100 cursor-pointer
+                                            ${selectedAssistant.name === assistant.name ? 'bg-gray-100' : ''}`}
+                                        onClick={() => handleSelectAssistant(assistant)}
+                                    >
+                                        <Image 
+                                            src={assistant.image} 
+                                            width={32} 
+                                            height={32} 
+                                            alt={assistant.name}
+                                            className="rounded-md object-cover"
+                                        />
+                                        <div className="text-sm">
+                                            {assistant.title}
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        </ScrollArea>
                     </div>
                     
                     {/* Assistant details - full width on mobile, right column on desktop */}
@@ -241,7 +278,7 @@ function AddNewAssistant({children}: any) {
                             </p>
                         </div>
                         <div className="flex gap-3 md:gap-5 justify-end mt-6 md:mt-10 w-full"> 
-                            <Button variant="secondary">
+                            <Button variant="secondary" onClick={() => setOpen(false)}>
                                 Cancel
                             </Button>
                             <Button 
@@ -258,4 +295,5 @@ function AddNewAssistant({children}: any) {
         </Dialog>
     )
 }
-    export default AddNewAssistant
+
+export default AddNewAssistant
