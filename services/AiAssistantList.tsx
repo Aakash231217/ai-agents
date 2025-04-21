@@ -10,7 +10,6 @@ export default [
             "🏋️ What's the best workout for building muscle?",
             "⚖️ How can I lose weight effectively?",
             "🍎 What should I eat before and after a workout?",
-            "🏠 Can you suggest a home workout routine?"
         ]
     },
     {
@@ -24,7 +23,6 @@ export default [
             "🔍 Can you fix the grammar in this sentence?",
             "✅ Is this sentence grammatically correct?",
             "📧 Can you check my email for grammar mistakes?",
-            "📖 What’s the correct way to use a semicolon?"
         ]
     },
     {
@@ -38,7 +36,6 @@ export default [
             "📝 Can you write a formal email for a job application?",
             "🙏 How do I politely decline an invitation via email?",
             "⏳ Can you help me write a follow-up email?",
-            "🎓 How do I start an email to a professor?"
         ]
     },
     {
@@ -52,7 +49,6 @@ export default [
             "📱 Can you write a script for a tech review video?",
             "🎥 How do I structure a YouTube vlog script?",
             "🔥 Can you create a script for a motivational speech video?",
-            "🎮 What’s a good hook for a gaming channel intro?"
         ]
     },
     {
@@ -80,7 +76,6 @@ export default [
             "❓ Why is my React component not rendering?",
             "🚨 Can you help debug this JavaScript error?",
             "🐍 How do I fix a syntax error in Python?",
-            "🔗 My API request is failing—what could be the issue?"
         ]
     },
     {
@@ -122,8 +117,7 @@ export default [
             "💬 What’s a romantic thing we can talk about?",
             "😂 Can you tell me a joke to make me smile?",
             "📍 How do you handle a long-distance relationship?",
-            "🌆 What’s your ideal way to spend an evening together?"
-        ]
+                ]
     },
     {
         id: 10,
@@ -136,7 +130,6 @@ export default [
             "📏 Can you explain the Pythagorean theorem?",
             "➗ How do I solve this algebra problem?",
             "📝 What are some tips for improving my writing skills?",
-            "⚖️ Can you help me understand Newton’s laws of motion?"
         ]
     }
 ]
