@@ -40,8 +40,6 @@ useEffect(()=>{
 },[assistant?.id])
 
 const onSendMessage = async () => {
-    if (!input.trim() || !assistant?.id) return; // Don't send empty messages or if no assistant is selected
-    
     setLoading(true);
     // Capture input value before clearing
     const userInput = input;
@@ -124,12 +122,10 @@ const onSendMessage = async () => {
         <div className='flex justify-between p-5 gap-5 absolute bottom-12 w-[89%]'>
             <Input placeholder="Start Typing Here..."
             value={input}
-            disabled={loading || !assistant?.id}
+            disabled={loading}
             onChange={(event)=>setInput(event.target.value)}
             onKeyPress={(e)=>e.key==='Enter' && onSendMessage()}/>
-            <Button 
-                disabled={loading || !assistant?.id}
-                onClick={onSendMessage}>
+            <Button disabled={loading}>
                 <Send/>
             </Button>
         </div>

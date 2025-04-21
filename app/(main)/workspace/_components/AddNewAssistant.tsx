@@ -1,5 +1,5 @@
 "use client"
-import React, { useContext, useState, useEffect } from 'react'
+import React, { useContext, useState } from 'react'
 import {
     Dialog,
     DialogContent,
@@ -16,14 +16,18 @@ import { Select } from '@radix-ui/react-select'
 import { SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import AiModelOptions from '@/services/AiModelOptions'
 import { Textarea } from '@/components/ui/textarea'
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
 import AssistantAvatar from './AssistantAvatar'
-import { useMutation, useQuery } from 'convex/react'
+import { useMutation } from 'convex/react'
 import { api } from '@/convex/_generated/api'
 import { AuthContext } from '@/context/AuthContext'
 import toast from 'react-hot-toast'
 import { AssistantContext } from '@/context/AssistantContext'
 import { Loader2Icon } from 'lucide-react'
-import { ScrollArea } from '@/components/ui/scroll-area'
 
 const DEFAULT_ASSISTANT = {
     image: '/bug-fixer.avif',
@@ -36,10 +40,10 @@ const DEFAULT_ASSISTANT = {
     aiModelId: 'OpenAI'
 }
 
-function AddNewAssistant({ children, onAssistantAdded }: { children: React.ReactNode, onAssistantAdded?: () => void }) {
+function AddNewAssistant({children}: any) {
     const [selectedAssistant, setSelectedAssistant] = useState<ASSISTANT>(DEFAULT_ASSISTANT)
     const AddAssistant = useMutation(api.userAiAssistant.InsertSelectedAssistants)
-    const { user } = useContext(AuthContext);
+    const {user} = useContext(AuthContext);
     const [loading, setLoading] = useState(false);
     const assistantContext = useContext(AssistantContext);
     // Fix: Properly handle context value based on its structure
@@ -49,21 +53,6 @@ function AddNewAssistant({ children, onAssistantAdded }: { children: React.React
     
     // Add state to control dialog open/close
     const [open, setOpen] = useState(false);
-    
-    // Get existing assistants to check for duplicates
-    const existingAssistants = useQuery(api.userAiAssistant.GetAllUserAssistants, 
-        user?._id ? { uid: user._id } : "skip")
-
-    // Reset form when dialog opens/closes
-    useEffect(() => {
-        if (!open) {
-            setSelectedAssistant({
-                ...DEFAULT_ASSISTANT,
-                instruction: '',
-                userInstruction: '',
-            });
-        }
-    }, [open]);
 
     const onHandleInputChange = (field: string, value: string) => {
         setSelectedAssistant((prev: any) => {
@@ -93,18 +82,6 @@ function AddNewAssistant({ children, onAssistantAdded }: { children: React.React
             return;
         }
         
-        // Check for duplicates
-        if (existingAssistants) {
-            const isDuplicate = existingAssistants.some(
-                assistant => assistant.name?.toLowerCase() === selectedAssistant.name?.toLowerCase()
-            );
-            
-            if (isDuplicate) {
-                toast.error('An assistant with this name already exists');
-                return;
-            }
-        }
-        
         try {
             setLoading(true);
             
@@ -121,14 +98,17 @@ function AddNewAssistant({ children, onAssistantAdded }: { children: React.React
             });
             
             toast.success('New Assistant Added');
-            
-            // Refresh the assistant list
-            if (typeof onAssistantAdded === 'function') {
-                onAssistantAdded();
-            }
+            setAssistant(null);
             
             // Close the dialog after successful addition
             setOpen(false);
+            
+            // Reset form to default
+            setSelectedAssistant({
+                ...DEFAULT_ASSISTANT,
+                instruction: '',
+                userInstruction: '',
+            });
             
         } catch (error) {
             console.error("Error adding assistant:", error);
@@ -164,7 +144,7 @@ function AddNewAssistant({ children, onAssistantAdded }: { children: React.React
                 {/* Responsive grid layout */}
                 <div className="flex flex-col md:grid md:grid-cols-5 md:gap-4 gap-6">
                     {/* Assistant list - full width on mobile, sidebar on desktop */}
-                    <div className="md:col-span-2 border-b md:border-b-0 md:border-r pb-4 md:pb-0 md:pr-4">
+                    <div className="md:col-span-2 border-b md:border-b-0 md:border-r pb-4 md:pb-0 md:pr-4 max-h-[250px] md:max-h-[400px] overflow-y-auto">
                         <Button 
                             variant="secondary" 
                             size="sm" 
@@ -181,29 +161,26 @@ function AddNewAssistant({ children, onAssistantAdded }: { children: React.React
                             + Create New Assistant
                         </Button>
                         
-                        <ScrollArea className="max-h-[250px] md:max-h-[400px]">
-                            <div className="space-y-2">
-                                {AiAssistantList.map((assistant, index) => (
-                                    <div 
-                                        key={index} 
-                                        className={`flex items-center gap-2 p-2 rounded-md hover:bg-gray-100 cursor-pointer
-                                            ${selectedAssistant.name === assistant.name ? 'bg-gray-100' : ''}`}
-                                        onClick={() => handleSelectAssistant(assistant)}
-                                    >
-                                        <Image 
-                                            src={assistant.image} 
-                                            width={32} 
-                                            height={32} 
-                                            alt={assistant.name}
-                                            className="rounded-md object-cover"
-                                        />
-                                        <div className="text-sm">
-                                            {assistant.title}
-                                        </div>
+                        <div className="space-y-2">
+                            {AiAssistantList.map((assistant, index) => (
+                                <div 
+                                    key={index} 
+                                    className="flex items-center gap-2 p-2 rounded-md hover:bg-gray-100 cursor-pointer"
+                                    onClick={() => handleSelectAssistant(assistant)}
+                                >
+                                    <Image 
+                                        src={assistant.image} 
+                                        width={32} 
+                                        height={32} 
+                                        alt={assistant.name}
+                                        className="rounded-md object-cover"
+                                    />
+                                    <div className="text-sm">
+                                        {assistant.title}
                                     </div>
-                                ))}
-                            </div>
-                        </ScrollArea>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                     
                     {/* Assistant details - full width on mobile, right column on desktop */}
