@@ -10,7 +10,7 @@ import axios from 'axios';
 
 interface Assistant {
     instruction: string;
-    id: string; // Ensure ID is string type
+    id: string;
     image: any;
     userInstruction: string;
     aiModelId: 1 | 2 | 3 | 4 | 5;
@@ -21,7 +21,6 @@ type MESSAGE = {
     content: string,
 };
 
-// LocalStorage helper functions
 const getStoredMessages = (assistantId: string): MESSAGE[] => {
   const key = `assistant-${assistantId}`;
   const storedData = localStorage.getItem(key);
@@ -58,7 +57,6 @@ function ChatUi() {
     const [loading, setLoading] = useState(false);
     const chatRef = useRef<HTMLDivElement>(null);
 
-    // Load messages when assistant changes
     useEffect(() => {
         if (assistant?.id) {
             const storedMessages = getStoredMessages(assistant.id);
@@ -66,16 +64,14 @@ function ChatUi() {
         } else {
             setMessages([]);
         }
-    }, [assistant?.id]); // Reload when ID changes
+    }, [assistant?.id]);
 
-    // Save messages when they change
     useEffect(() => {
         if (assistant?.id && messages.length > 0) {
             storeMessages(assistant.id, messages);
         }
     }, [messages, assistant?.id]);
 
-    // Scroll handling
     useEffect(() => {
         if (chatRef.current) {
             chatRef.current.scrollTop = chatRef.current.scrollHeight;
@@ -89,7 +85,6 @@ function ChatUi() {
         setInput('');
         setLoading(true);
 
-        // Update local state immediately
         const newMessages = [
             ...messages,
             { role: 'user', content: userInput },
@@ -118,7 +113,6 @@ function ChatUi() {
                 ]
             });
 
-            // Update with actual response
             setMessages(prev => [
                 ...prev.slice(0, -1),
                 { role: 'assistant', content: response.data.response }
@@ -134,29 +128,37 @@ function ChatUi() {
     };
 
     return (
-        <div className='mt-20 p-6 relative h-[88vh]'>
+        <div className="flex flex-col h-[calc(100vh-160px)] p-6 pb-0">
             {messages.length === 0 && <EmptyChatState />}
             
-            <div ref={chatRef} className='h-[73vh] overflow-y-auto scrollbar-hide'>
+            <div 
+                ref={chatRef}
+                className="flex-1 overflow-y-auto scrollbar-hide pr-4 mb-4 space-y-4"
+            >
                 {messages.map((msg, index) => (
-                    <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} gap-2 p-2`}>
-                        <div className='flex gap-3'>
+                    <div 
+                        key={index}
+                        className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                        <div className={`max-w-[85%] flex ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'} gap-3`}>
                             {msg.role === 'assistant' && (
                                 <Image 
                                     src={assistant.image}
-                                    alt='Assistant'
+                                    alt="Assistant"
                                     width={40}
                                     height={40}
-                                    className='rounded-full object-cover w-10 h-10'
+                                    className="rounded-full object-cover w-10 h-10 flex-shrink-0"
                                 />
                             )}
-                            <div className={`p-3 max-w-3xl ${
-                                msg.role === 'user' 
-                                    ? 'bg-blue-200 text-black rounded-br-none rounded-tl-xl' 
-                                    : 'bg-gray-200 dark:bg-slate-400 text-black rounded-bl-none rounded-tr-xl'
-                            }`}>
+                            <div 
+                                className={`p-3 rounded-lg ${
+                                    msg.role === 'user' 
+                                        ? 'bg-blue-100 dark:bg-blue-900 ml-12' 
+                                        : 'bg-gray-100 dark:bg-gray-800 mr-12'
+                                } break-words`}
+                            >
                                 {msg.content === 'Loading...' ? (
-                                    <Loader2Icon className='animate-spin' />
+                                    <Loader2Icon className="animate-spin" />
                                 ) : (
                                     msg.content
                                 )}
@@ -166,20 +168,28 @@ function ChatUi() {
                 ))}
             </div>
 
-            <div className='flex justify-between p-5 gap-5 absolute bottom-12 w-[89%]'>
-                <Input 
-                    placeholder="Start Typing Here..."
-                    value={input}
-                    disabled={loading}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && onSendMessage()}
-                />
-                <Button 
-                    onClick={onSendMessage}
-                    disabled={loading}
-                >
-                    {loading ? <Loader2Icon className='animate-spin' /> : <Send />}
-                </Button>
+            <div className="sticky bottom-0 bg-background pt-4 border-t">
+                <div className="flex gap-3 w-full max-w-4xl mx-auto">
+                    <Input 
+                        placeholder="Start Typing Here..."
+                        value={input}
+                        disabled={loading}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && onSendMessage()}
+                        className="flex-1 rounded-full px-6 py-5 shadow-sm"
+                    />
+                    <Button 
+                        onClick={onSendMessage}
+                        disabled={loading}
+                        className="rounded-full h-12 w-12 p-3 shrink-0"
+                    >
+                        {loading ? (
+                            <Loader2Icon className="animate-spin h-5 w-5" />
+                        ) : (
+                            <Send className="h-5 w-5" />
+                        )}
+                    </Button>
+                </div>
             </div>
         </div>
     );
