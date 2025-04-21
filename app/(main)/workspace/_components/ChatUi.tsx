@@ -25,34 +25,42 @@ type MESSAGE = {
     content: string,
 };
 
-const getStoredMessages = (assistantId: string): MESSAGE[] => {
-  const key = `assistant-${assistantId}`;
-  const storedData = localStorage.getItem(key);
-  
-  if (storedData) {
-    try {
-      const { messages, timestamp } = JSON.parse(storedData);
-      const threeDays = 3 * 24 * 60 * 60 * 1000;
-      
-      if (Date.now() - timestamp < threeDays) {
-        return messages;
-      }
-      localStorage.removeItem(key);
-    } catch (e) {
-      console.error('Error parsing stored messages:', e);
-    }
-  }
-  return [];
-};
+// Update these functions in your ChatUi.tsx file
 
-const storeMessages = (assistantId: string, messages: MESSAGE[]) => {
-  const key = `assistant-${assistantId}`;
-  const data = {
-    messages,
-    timestamp: Date.now()
+const getStoredMessages = (assistantId: string): MESSAGE[] => {
+    if (!assistantId) return []; // Safety check for undefined ID
+    
+    const key = `assistant-${assistantId}`;
+    const storedData = localStorage.getItem(key);
+    
+    if (storedData) {
+      try {
+        const { messages, timestamp } = JSON.parse(storedData);
+        const threeDays = 3 * 24 * 60 * 60 * 1000;
+        
+        if (Date.now() - timestamp < threeDays) {
+          return messages;
+        }
+        localStorage.removeItem(key);
+      } catch (e) {
+        console.error('Error parsing stored messages:', e);
+      }
+    }
+    return [];
   };
-  localStorage.setItem(key, JSON.stringify(data));
-};
+  
+  const storeMessages = (assistantId: string, messages: MESSAGE[]) => {
+    if (!assistantId) return; // Safety check for undefined ID
+    
+    const key = `assistant-${assistantId}`;
+    const data = {
+      messages,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(key, JSON.stringify(data));
+  };
+// Default placeholder image to use when assistant image is not available
+const DEFAULT_ASSISTANT_IMAGE = '/bug-fixer.avif'; // Update this path to your default image
 
 function ChatUi() {
     const [input, setInput] = useState<string>('');
@@ -83,7 +91,7 @@ function ChatUi() {
     }, [messages]);
 
     const onSendMessage = async () => {
-        if (!input.trim() || loading) return;
+        if (!input.trim() || loading || !assistant) return;
         
         const userInput = input.trim();
         setInput('');
@@ -131,9 +139,12 @@ function ChatUi() {
         }
     };
 
+    // Check if assistant exists before rendering chat messages
+    const shouldShowEmptyState = !assistant || messages.length === 0;
+
     return (
         <div className="flex flex-col h-[calc(100vh-160px)] p-6 pb-0">
-            {messages.length === 0 && <EmptyChatState />}
+            {shouldShowEmptyState && <EmptyChatState />}
             
             <div 
                 ref={chatRef}
@@ -147,7 +158,7 @@ function ChatUi() {
                         <div className={`max-w-[85%] flex ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'} gap-3`}>
                             {msg.role === 'assistant' && (
                                 <Image 
-                                    src={assistant.image}
+                                    src={assistant?.image || DEFAULT_ASSISTANT_IMAGE}
                                     alt="Assistant"
                                     width={40}
                                     height={40}
@@ -210,14 +221,14 @@ function ChatUi() {
                     <Input 
                         placeholder="Start Typing Here..."
                         value={input}
-                        disabled={loading}
+                        disabled={loading || !assistant}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && onSendMessage()}
                         className="flex-1 rounded-full px-6 py-5 shadow-sm"
                     />
                     <Button 
                         onClick={onSendMessage}
-                        disabled={loading}
+                        disabled={loading || !assistant}
                         className="rounded-full h-12 w-12 p-3 shrink-0"
                     >
                         {loading ? (

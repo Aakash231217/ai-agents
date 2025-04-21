@@ -1,21 +1,38 @@
 import {v} from "convex/values";
 import {mutation, query} from "./_generated/server";
 
-export const InsertSelectedAssistants=mutation({
-    args:{
-        records:v.any(),
-        uid:v.id('users')
-    },
-    handler:async(ctx,args)=>{
-       const insertedIds = await Promise.all(
-        args.records.map(async(record:any)=>
-        await ctx.db.insert('userAiAssistants',{
-            ...record,
-            aiModelId:'OpenAI',
-            uid:args.uid
-        }))
-       )
-       return insertedIds
+export const InsertSelectedAssistants = mutation({
+  args: {
+    records: v.array(v.any()),
+    uid: v.string()
+  },
+  handler: async (ctx, args) => {
+    const records = args.records;
+    const uid = args.uid;
+    
+    // Process each record and ensure it has a unique ID
+    const recordsWithIds = records.map(record => {
+      // If the record doesn't have an ID or has -1, generate a random positive ID
+      if (!record.id || record.id === -1) {
+        // Generate a random ID between 1 and 10000
+        // You can adjust the range as needed
+        const randomId = Math.floor(Math.random() * 10000) + 1;
+        return { ...record, id: randomId };
+      }
+      return record;
+    });
+    
+    // Insert the records with IDs
+    const insertedIds = [];
+    for (const record of recordsWithIds) {
+      const id = await ctx.db.insert("userAiAssistants", {
+        ...record,
+        uid
+      });
+      insertedIds.push(id);
+    }
+    
+    return insertedIds
     }
 })
 

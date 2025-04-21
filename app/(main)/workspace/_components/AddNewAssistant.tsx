@@ -50,6 +50,9 @@ function AddNewAssistant({children}: any) {
     const setAssistant = assistantContext ? 
         (Array.isArray(assistantContext) ? assistantContext[1] : assistantContext.setAssistant) : 
         () => {}; 
+    
+    // Add state to control dialog open/close
+    const [isOpen, setIsOpen] = useState(false);
 
     const onHandleInputChange = (field: string, value: string) => {
         setSelectedAssistant((prev: any) => {
@@ -96,6 +99,12 @@ function AddNewAssistant({children}: any) {
             
             toast.success('New Assistant Added');
             setAssistant(null);
+            
+            // Close the dialog after successful save
+            setIsOpen(false);
+            
+            // Reset to default for next time
+            setSelectedAssistant(DEFAULT_ASSISTANT);
         } catch (error) {
             console.error("Error adding assistant:", error);
             toast.error('Failed to add assistant');
@@ -120,7 +129,7 @@ function AddNewAssistant({children}: any) {
     };
     
     return (
-        <Dialog>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent className="sm:max-w-[600px] w-[95%] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
                 <DialogHeader>
@@ -241,7 +250,10 @@ function AddNewAssistant({children}: any) {
                             </p>
                         </div>
                         <div className="flex gap-3 md:gap-5 justify-end mt-6 md:mt-10 w-full"> 
-                            <Button variant="secondary">
+                            <Button 
+                                variant="secondary" 
+                                onClick={() => setIsOpen(false)}
+                            >
                                 Cancel
                             </Button>
                             <Button 
@@ -258,4 +270,5 @@ function AddNewAssistant({children}: any) {
         </Dialog>
     )
 }
-    export default AddNewAssistant
+
+export default AddNewAssistant
