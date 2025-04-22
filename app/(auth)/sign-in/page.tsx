@@ -27,13 +27,7 @@ function SignIn() {
         setError(null)
 
         if (typeof window !== "undefined") {
-          // Store access token
           localStorage.setItem("user_token", tokenResponse.access_token)
-          
-          // Set login expiration (2 days from now)
-          const expirationDate = new Date()
-          expirationDate.setDate(expirationDate.getDate() + 2)
-          localStorage.setItem("login_expiration", expirationDate.toISOString())
         }
 
         const googleUser = await GetAuthUserData(tokenResponse.access_token)
@@ -51,11 +45,6 @@ function SignIn() {
         }
 
         // Update context - cast to proper type if needed
-        
-        // Store user data in localStorage as well
-        if (typeof window !== "undefined") {
-          localStorage.setItem("user_data", JSON.stringify(dbUser))
-        }
 
         // Navigate after successful authentication
         router.replace("/ai-assistants")
@@ -65,8 +54,6 @@ function SignIn() {
 
         if (typeof window !== "undefined") {
           localStorage.removeItem("user_token")
-          localStorage.removeItem("login_expiration")
-          localStorage.removeItem("user_data")
         }
       } finally {
         setIsLoading(false)
