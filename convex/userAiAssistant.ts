@@ -10,29 +10,40 @@ export const InsertSelectedAssistants = mutation({
     const records = args.records;
     const uid = args.uid;
     
-    // Process each record and ensure it has a unique ID
-    const recordsWithIds = records.map(record => {
-      // If the record doesn't have an ID or has -1, generate a random positive ID
-      if (!record.id || record.id === -1) {
-        // Generate a random ID between 1 and 10000
-        // You can adjust the range as needed
-        const randomId = Math.floor(Math.random() * 10000) + 1;
-        return { ...record, id: randomId };
-      }
-      return record;
-    });
+    // First, get the highest existing ID to avoid conflicts
+    const allAssistants = await ctx.db.query("userAiAssistants").collect();
     
-    // Insert the records with IDs
+    // Find the highest ID currently in use
+    let highestId = 0;
+    for (const assistant of allAssistants) {
+      if (typeof assistant.id === 'number' && assistant.id > highestId) {
+        highestId = assistant.id;
+      }
+    }
+    
+    // Insert the records with sequential IDs starting after the highest
     const insertedIds = [];
-    for (const record of recordsWithIds) {
-      const id = await ctx.db.insert("userAiAssistants", {
+    for (const record of records) {
+      // Force a new ID for each record, incrementing from highest
+      highestId += 1;
+      
+      // Create a clean record with the new ID
+      const newRecord = {
         ...record,
+        id: highestId,
         uid
-      });
+      };
+      
+      // Remove any _id field if it exists (to avoid conflicts)
+      if (newRecord._id) {
+        delete newRecord._id;
+      }
+      
+      const id = await ctx.db.insert("userAiAssistants", newRecord);
       insertedIds.push(id);
     }
     
-    return insertedIds
+    return insertedIds;
     }
 })
 
