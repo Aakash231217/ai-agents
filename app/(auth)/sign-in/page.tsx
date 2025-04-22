@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Image from "next/image"
 import { useGoogleLogin } from "@react-oauth/google"
-import { useContext, useState } from "react"
+import { useContext, useState, useEffect } from "react"
 import { GetAuthUserData } from "@/services/GlobalApi"
 import { useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
@@ -17,8 +17,54 @@ function SignIn() {
   const createUser = useMutation(api.users.CreateUser)
   const { setUser } = useContext(AuthContext)
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true) // Start with loading true
+  const [error, setError] = useState(null)
+
+  // Check for existing authentication on mount
+  useEffect(() => {
+    const checkExistingAuth = async () => {
+      try {
+        // Get token and expiration from localStorage
+        const userToken = localStorage.getItem("user_token")
+        const tokenExpiry = localStorage.getItem("token_expiry")
+        
+        // If token exists and hasn't expired, try to use it
+        if (userToken && tokenExpiry && new Date().getTime() < parseInt(tokenExpiry)) {
+          // Get user data using the existing token
+          const googleUser = await GetAuthUserData(userToken)
+          
+          // Save/update user in database
+          const dbUser = await createUser({
+            name: googleUser.name,
+            email: googleUser.email,
+            picture: googleUser.picture,
+          })
+          
+          // Set user in context
+          
+          // Redirect to workspace
+          router.replace("/workspace")
+          return
+        }
+        
+        // If we reach here, no valid token exists
+        if (userToken) {
+          // Clear expired tokens
+          localStorage.removeItem("user_token")
+          localStorage.removeItem("token_expiry")
+        }
+      } catch (error) {
+        console.error("Error checking authentication:", error)
+        // Clear potentially invalid tokens
+        localStorage.removeItem("user_token")
+        localStorage.removeItem("token_expiry")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    checkExistingAuth()
+  }, [router, createUser, setUser])
 
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -26,8 +72,12 @@ function SignIn() {
         setIsLoading(true)
         setError(null)
 
+        // Store token with 3-day expiration
+        const expiryTime = new Date().getTime() + (3 * 24 * 60 * 60 * 1000) // Current time + 3 days in milliseconds
+        
         if (typeof window !== "undefined") {
           localStorage.setItem("user_token", tokenResponse.access_token)
+          localStorage.setItem("token_expiry", expiryTime.toString())
         }
 
         const googleUser = await GetAuthUserData(tokenResponse.access_token)
@@ -44,16 +94,17 @@ function SignIn() {
           throw new Error("Failed to create or retrieve user")
         }
 
-        // Update context - cast to proper type if needed
+        // Update context
 
         // Navigate after successful authentication
         router.replace("/ai-assistants")
-      } catch (error: any) {
+      } catch (error) {
         console.error("Login failed:", error)
-        setError(error.message || "Authentication failed")
+  
 
         if (typeof window !== "undefined") {
           localStorage.removeItem("user_token")
+          localStorage.removeItem("token_expiry")
         }
       } finally {
         setIsLoading(false)
@@ -61,10 +112,19 @@ function SignIn() {
     },
     onError: (errorResponse) => {
       console.error("Google login error:", errorResponse)
-      setError("Google authentication failed")
+  
       setIsLoading(false)
     },
   })
+
+  // Show a loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">

@@ -28,7 +28,19 @@ export type ASSISTANT = {
 
 export default function AssistantList() {
     const router = useRouter();
-    const {user} = useContext(AuthContext);
+    // Define the expected AuthContext type
+    type AuthContextType = {
+        user: {
+            _id: string;
+            name?: string;
+            picture?: string;
+            orderId?: string;
+            // add other user properties as needed
+        } | null;
+        // add other AuthContext properties if needed
+    };
+    
+        const { user } = useContext(AuthContext);
     const convex = useConvex();
     const [assistantList, setAssistantList] = useState<ASSISTANT[]>([]);
     const [filteredList, setFilteredList] = useState<ASSISTANT[]>([]);
