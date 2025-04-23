@@ -132,7 +132,7 @@ function ChatUi() {
         } catch (error) {
             setMessages(prev => [
                 ...prev.slice(0, -1),
-                { role: 'assistant', content: 'Error: Failed to get response' }
+                { role: 'assistant', content: 'Serving another people right now !! Will be back ASAP' }
             ]);
         } finally {
             setLoading(false);
