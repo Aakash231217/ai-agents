@@ -79,7 +79,7 @@ function Provider({
                                 className="object-contain"
                             />
                         </div>
-                        <h1 className="font-medium text-xl">Runigene</h1>
+                        <Link href={'/'}><h1 className="font-medium text-xl">Runigene</h1></Link>
                     </div>
                     
                     <div className="flex items-center gap-3">
