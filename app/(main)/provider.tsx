@@ -8,6 +8,8 @@ import { AuthContext } from '@/context/AuthContext';
 import Image from 'next/image';
 import { AssistantContext } from '@/context/AssistantContext';
 import { Settings } from 'lucide-react';
+import Link from 'next/link';
+
 
 function Provider({
     children,
