@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import Link from "next/link"
-import { Sparkles, Bot, Zap, Code, ArrowRight } from "lucide-react"
+import { Sparkles, Bot, Zap, Code, ArrowRight, Linkedin, Mail, Phone } from "lucide-react"
 
 export default function Home() {
   return (
@@ -93,7 +93,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Existing 3D Illustration Section (Remains Unchanged) */}
+        {/* Existing 3D Illustration Section */}
         <div className="mt-20 flex justify-center">
           <div className="relative w-full max-w-2xl h-80 bg-gradient-to-r from-purple-900/40 to-blue-900/40 rounded-2xl overflow-hidden border border-white/10">
             <div className="absolute inset-0 flex items-center justify-center">
@@ -111,6 +111,56 @@ export default function Home() {
             </div>
           </div>
         </div>
+        
+        {/* Contact Section */}
+        <div className="mt-32 mb-10">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">
+              Get In Touch
+            </h2>
+            <p className="text-slate-300 mt-4">Have questions? Reach out to us using any of these channels.</p>
+          </div>
+          
+          <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Link href="https://www.linkedin.com/in/aakash-singh-provoker/" target="_blank" rel="noopener noreferrer">
+              <div className="bg-white/5 backdrop-blur-lg p-6 rounded-2xl border border-white/10 hover:border-blue-500/50 transition-all hover:shadow-lg hover:shadow-blue-500/10 flex flex-col items-center text-center">
+                <div className="bg-blue-500/20 p-3 rounded-xl mb-4">
+                  <Linkedin className="h-6 w-6 text-blue-400" />
+                </div>
+                <h3 className="text-lg font-bold mb-2">LinkedIn</h3>
+                <p className="text-slate-300 text-sm">Connect professionally</p>
+                <p className="text-blue-400 text-sm mt-3 truncate max-w-full">aakash-singh-provoker</p>
+              </div>
+            </Link>
+            
+            <Link href="https://wa.me/917985113984" target="_blank" rel="noopener noreferrer">
+              <div className="bg-white/5 backdrop-blur-lg p-6 rounded-2xl border border-white/10 hover:border-green-500/50 transition-all hover:shadow-lg hover:shadow-green-500/10 flex flex-col items-center text-center">
+                <div className="bg-green-500/20 p-3 rounded-xl mb-4">
+                  <Phone className="h-6 w-6 text-green-400" />
+                </div>
+                <h3 className="text-lg font-bold mb-2">WhatsApp</h3>
+                <p className="text-slate-300 text-sm">Chat with us directly</p>
+                <p className="text-green-400 text-sm mt-3">+91-798*******</p>
+              </div>
+            </Link>
+            
+            <Link href="mailto:rktaakash@gmail.com">
+              <div className="bg-white/5 backdrop-blur-lg p-6 rounded-2xl border border-white/10 hover:border-purple-500/50 transition-all hover:shadow-lg hover:shadow-purple-500/10 flex flex-col items-center text-center">
+                <div className="bg-purple-500/20 p-3 rounded-xl mb-4">
+                  <Mail className="h-6 w-6 text-purple-400" />
+                </div>
+                <h3 className="text-lg font-bold mb-2">Email</h3>
+                <p className="text-slate-300 text-sm">Send us a message</p>
+                <p className="text-purple-400 text-sm mt-3">rktaakash@gmail.com</p>
+              </div>
+            </Link>
+          </div>
+        </div>
+        
+        {/* Footer */}
+        <footer className="mt-20 pt-10 border-t border-white/10 text-center">
+          <p className="text-slate-400 text-sm">© {new Date().getFullYear()} AI Assistant Platform. All rights reserved.</p>
+        </footer>
       </div>
     </div>
   )
