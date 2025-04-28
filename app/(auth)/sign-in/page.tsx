@@ -154,7 +154,7 @@ function SignIn() {
           <div className="inline-block p-2 bg-white rounded-2xl shadow-sm mb-4">
             <Image src={"/logo.svg"} alt="Runigene logo" width={80} height={80} className="animate-pulse" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Welcome to Runigene</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Welcome to Adaptius</h1>
           <p className="mt-2 text-slate-600">Your Personal AI Agent</p>
         </div>
 
