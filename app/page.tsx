@@ -13,6 +13,29 @@ export default function Home() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-pink-500 blur-3xl"></div>
       </div>
 
+      {/* Header with Logo */}
+      <header className="relative z-20 w-full py-4 px-6 backdrop-blur-md bg-slate-900/50 border-b border-white/10">
+        <div className="container mx-auto flex justify-between items-center">
+          <Link href="/" className="flex items-center gap-2">
+            <Image 
+              src="/logo.png" 
+              alt="Adaptius Logo" 
+              width={40} 
+              height={40}
+              className="object-contain"
+            />
+            <span className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">Adaptius</span>
+          </Link>
+          
+         
+          
+          <div className="flex items-center gap-4">
+            <Link href="/sign-in" className="text-slate-300 hover:text-white transition-colors">Sign In</Link>
+           
+          </div>
+        </div>
+      </header>
+
       {/* Floating 3D Elements */}
       <div className="absolute top-20 right-20 animate-bounce-slow">
         <div className="w-16 h-16 bg-white/10 backdrop-blur-lg rounded-xl rotate-12 border border-white/20"></div>
