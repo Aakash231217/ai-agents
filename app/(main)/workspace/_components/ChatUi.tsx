@@ -25,40 +25,55 @@ type MESSAGE = {
     content: string,
 };
 
-// Update these functions in your ChatUi.tsx file
+// Updated function to create a standardized localStorage key
+const getAssistantStorageKey = (assistantId: string): string => {
+    if (!assistantId) return '';
+    return `assistant-${assistantId}`;
+};
 
+// Get messages from localStorage with proper expiration check
 const getStoredMessages = (assistantId: string): MESSAGE[] => {
     if (!assistantId) return []; // Safety check for undefined ID
     
-    const key = `assistant-${assistantId}`;
+    const key = getAssistantStorageKey(assistantId);
     const storedData = localStorage.getItem(key);
     
     if (storedData) {
-      try {
-        const { messages, timestamp } = JSON.parse(storedData);
-        const threeDays = 3 * 24 * 60 * 60 * 1000;
-        
-        if (Date.now() - timestamp < threeDays) {
-          return messages;
+        try {
+            const { messages, timestamp } = JSON.parse(storedData);
+            const threeDays = 3 * 24 * 60 * 60 * 1000;
+            
+            if (Date.now() - timestamp < threeDays) {
+                return messages;
+            }
+            localStorage.removeItem(key);
+        } catch (e) {
+            console.error('Error parsing stored messages:', e);
         }
-        localStorage.removeItem(key);
-      } catch (e) {
-        console.error('Error parsing stored messages:', e);
-      }
     }
     return [];
-  };
-  
-  const storeMessages = (assistantId: string, messages: MESSAGE[]) => {
+};
+
+// Store messages in localStorage with timestamp
+const storeMessages = (assistantId: string, messages: MESSAGE[]) => {
     if (!assistantId) return; // Safety check for undefined ID
     
-    const key = `assistant-${assistantId}`;
+    const key = getAssistantStorageKey(assistantId);
     const data = {
-      messages,
-      timestamp: Date.now()
+        messages,
+        timestamp: Date.now()
     };
     localStorage.setItem(key, JSON.stringify(data));
-  };
+};
+
+// Delete messages for an assistant from localStorage
+export const deleteStoredMessages = (assistantId: string) => {
+    if (!assistantId) return; // Safety check for undefined ID
+    
+    const key = getAssistantStorageKey(assistantId);
+    localStorage.removeItem(key);
+};
+
 // Default placeholder image to use when assistant image is not available
 const DEFAULT_ASSISTANT_IMAGE = '/bug-fixer.avif'; // Update this path to your default image
 
@@ -68,15 +83,21 @@ function ChatUi() {
     const [messages, setMessages] = useState<MESSAGE[]>([]);
     const [loading, setLoading] = useState(false);
     const chatRef = useRef<HTMLDivElement>(null);
+    const [previousAssistantId, setPreviousAssistantId] = useState<string | null>(null);
 
     useEffect(() => {
         if (assistant?.id) {
-            const storedMessages = getStoredMessages(assistant.id);
-            setMessages(storedMessages);
+            // If assistant changed, load the new messages
+            if (previousAssistantId !== assistant.id) {
+                const storedMessages = getStoredMessages(assistant.id);
+                setMessages(storedMessages);
+                setPreviousAssistantId(assistant.id);
+            }
         } else {
             setMessages([]);
+            setPreviousAssistantId(null);
         }
-    }, [assistant?.id]);
+    }, [assistant?.id, previousAssistantId]);
 
     useEffect(() => {
         if (assistant?.id && messages.length > 0) {
