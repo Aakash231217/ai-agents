@@ -18,7 +18,6 @@ import { useMutation } from 'convex/react'
 import { api } from '@/convex/_generated/api'
 import { Id } from '@/convex/_generated/dataModel'
 import ConfirmationAlert from '../ConfirmationDialog'
-import { deleteStoredMessages } from './ChatUi' // Import the function to delete messages
 
 function AssistantSettings() {
     const { assistant, setAssistant } = useContext(AssistantContext)
@@ -78,23 +77,12 @@ function AssistantSettings() {
     }
     
     const onDelete = async () => {
+        console.log('Delete')
         setLoading(true);
         try {
-            // Store the assistant ID before deletion
-            const assistantIdToDelete = assistant._id || assistant.id;
-            
-            // First, delete the assistant from the database
             await DeleteAssistant({
                 id: assistant?._id
-            });
-            
-            // Then, delete the messages from localStorage
-            if (assistantIdToDelete) {
-                deleteStoredMessages(assistantIdToDelete);
-                console.log(`Deleted messages for assistant ID: ${assistantIdToDelete}`);
-            }
-            
-            // Finally, clear the assistant from context
+            })
             setAssistant(null);
             toast.success('Assistant deleted successfully');
         } catch (error) {
@@ -166,4 +154,4 @@ function AssistantSettings() {
     ) : null
 }
 
-export default AssistantSettings;
+export default AssistantSettings
