@@ -4,13 +4,14 @@ import { AssistantContext } from '@/context/AssistantContext';
 import { useConvex } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import React, { useContext, useState, useEffect } from 'react'
-import { MessageSquare, Search, Sparkles } from 'lucide-react';
+import { MessageSquare, Search, Sparkles, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { BlurFade } from '@/components/magicui/blur-fade';
 import Image from 'next/image';
 import { AuthContext } from '@/context/AuthContext';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 // Define Assistant type
 type ASSISTANT = {
@@ -26,6 +27,19 @@ type ASSISTANT = {
 
 // Default image for assistants without one
 const DEFAULT_ASSISTANT_IMAGE = '/bug-fixer.avif';
+
+// Beta Disclaimer Component
+function BetaDisclaimer() {
+  return (
+    <Alert variant="destructive" className="mb-6 bg-amber-100 dark:bg-amber-900/30 border-amber-500 text-amber-800 dark:text-amber-300">
+      <AlertCircle className="h-4 w-4" />
+      <AlertTitle>Beta Feature Notice</AlertTitle>
+      <AlertDescription>
+        Our speaking-assistant is currently in beta phase and won't be able to read larger articles.
+      </AlertDescription>
+    </Alert>
+  );
+}
 
 function EmptyChatState() {
   const { assistant, setAssistant } = useContext(AssistantContext);
@@ -95,6 +109,16 @@ function EmptyChatState() {
 
   return (
     <div className='flex flex-col items-center justify-center min-h-[60vh] px-4'>
+      {/* Beta Disclaimer */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md"
+      >
+        <BetaDisclaimer />
+      </motion.div>
+      
       <div className='mb-8 relative'>
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -112,7 +136,7 @@ function EmptyChatState() {
             </div>
           )}
         </motion.div>
-        
+
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
