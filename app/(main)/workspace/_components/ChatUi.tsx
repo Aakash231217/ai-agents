@@ -391,7 +391,7 @@ function ChatUi() {
                         
                         <div className="flex items-center gap-2">
                             <div className="flex items-center">
-                                <span className="text-sm text-gray-500 mr-2"></span>
+                                <span className="text-sm text-gray-500 mr-2">Auto-speak:</span>
                                 <Button
                                     variant={autoSpeak ? "default" : "outline"}
                                     size="sm"
