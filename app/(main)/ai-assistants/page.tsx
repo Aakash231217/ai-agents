@@ -89,8 +89,8 @@ function AIAssistants() {
   }
 
   return (
-    // Use a regular div with no height constraints to allow full content scrolling
-    <div className="w-full pb-24 sm:pb-16">
+    // Main container with overflow-auto to ensure scrolling works on all devices
+    <div className="w-full h-full min-h-screen overflow-auto pb-24 sm:pb-16">
       {/* Header section */}
       <div className="px-4 sm:px-6 md:px-10 lg:px-16 xl:px-20 mt-8 md:mt-16">
         <div className="flex flex-col space-y-4">
@@ -112,8 +112,8 @@ function AIAssistants() {
         </div>
       </div>
 
-      {/* Grid section - with no height constraints */}
-      <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 px-4 sm:px-6 md:px-10 lg:px-16 xl:px-20">
+      {/* Grid section - with scrollable container */}
+      <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 px-4 sm:px-6 md:px-10 lg:px-16 xl:px-20 mb-20 sm:mb-0">
         {AiAssistantList.map((assistant, index) => (
           <BlurFade key={assistant.id || index} delay={0.25 + index * 0.05} inView>
             <div 
