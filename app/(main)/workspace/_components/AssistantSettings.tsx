@@ -80,6 +80,31 @@ function AssistantSettings() {
         console.log('Delete')
         setLoading(true);
         try {
+            // Clear messages from local storage before deleting the assistant
+            // We need to check both id and _id since ChatUi uses assistant.id for storage
+            if (assistant) {
+                // Clear using _id (Convex ID)
+                if (assistant._id) {
+                    const localStorageKey1 = `assistant-${assistant._id}`;
+                    localStorage.removeItem(localStorageKey1);
+                    console.log(`Cleared messages for assistant _id: ${assistant._id}`);
+                }
+                
+                // Clear using id (original ID from AiAssistantList)
+                if (assistant.id) {
+                    const localStorageKey2 = `assistant-${assistant.id}`;
+                    localStorage.removeItem(localStorageKey2);
+                    console.log(`Cleared messages for assistant id: ${assistant.id}`);
+                }
+                
+                // Clear using string version of id if it's a number
+                if (typeof assistant.id === 'number') {
+                    const localStorageKey3 = `assistant-${assistant.id.toString()}`;
+                    localStorage.removeItem(localStorageKey3);
+                    console.log(`Cleared messages for assistant id (string): ${assistant.id.toString()}`);
+                }
+            }
+            
             await DeleteAssistant({
                 id: assistant?._id
             })
