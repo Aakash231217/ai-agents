@@ -19,7 +19,7 @@ export default function Home() {
           <Link href="/" className="flex items-center gap-2">
             <Image 
               src="/logo.png" 
-              alt="Adaptius Logo" 
+              alt="" 
               width={40} 
               height={40}
               className="object-contain"
