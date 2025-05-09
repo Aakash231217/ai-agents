@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import Link from "next/link"
-import { Sparkles, Bot, Zap, Code, ArrowRight, Linkedin, Mail, Phone } from "lucide-react"
+import { Sparkles, Bot, Zap, Code, ArrowRight, Linkedin, Mail, Phone, Trophy, Gift, Star } from "lucide-react"
 
 export default function Home() {
   return (
@@ -59,16 +59,84 @@ export default function Home() {
             Create Powerful AI Assistants
           </h1>
 
-          <p className="text-xl md:text-2xl text-slate-300 mb-10 max-w-3xl">
-            Design, build, and deploy custom AI assistants that understand your business needs. No coding required.
-          </p>
-
           <Link href="/sign-in">
             <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-6 rounded-xl text-lg font-medium flex items-center gap-2 shadow-lg shadow-purple-500/20 transition-all hover:scale-105">
               Get Started
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
+        </div>
+
+        {/* Contest Section - NEW */}
+        <div className="mt-24 relative">
+          {/* Sparkle effects */}
+          <div className="absolute -top-8 left-12 animate-pulse">
+            <Star className="h-6 w-6 text-yellow-300" />
+          </div>
+          <div className="absolute -top-4 right-20 animate-bounce-slow">
+            <Star className="h-5 w-5 text-yellow-300" />
+          </div>
+          <div className="absolute bottom-8 left-28 animate-pulse">
+            <Star className="h-4 w-4 text-yellow-300" />
+          </div>
+          
+          <div className="w-full max-w-5xl mx-auto bg-gradient-to-br from-yellow-600/30 via-orange-600/20 to-red-600/30 backdrop-blur-lg rounded-2xl border border-yellow-500/30 p-8 overflow-hidden relative">
+            {/* Background glow effect */}
+            <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-yellow-500/20 blur-3xl"></div>
+            
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              <div className="flex-shrink-0 bg-yellow-500/20 p-4 rounded-full">
+                <Trophy className="h-16 w-16 text-yellow-400" />
+              </div>
+              
+              <div className="flex-1">
+                <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-1 rounded-full mb-3">
+                  <Sparkles className="h-3 w-3 text-yellow-400" />
+                  <span className="text-xs font-bold text-yellow-300 uppercase tracking-wider">Limited Time Offer</span>
+                </div>
+                
+                <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-orange-400">
+                  AI Assistant Creation Contest
+                </h2>
+                
+                <p className="text-lg text-white mb-6">
+                  <span className="font-bold text-yellow-300">No coding required!</span> Create an AI assistant using just instructions and win big!
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20">
+                    <Gift className="h-5 w-5 text-yellow-400 mb-2" />
+                    <h3 className="font-bold text-white">₹10,000 Cash</h3>
+                    <p className="text-sm text-slate-300">For grand prize winners</p>
+                  </div>
+                  
+                  <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20">
+                    <Zap className="h-5 w-5 text-yellow-400 mb-2" />
+                    <h3 className="font-bold text-white">Premium Access</h3>
+                    <p className="text-sm text-slate-300">Free platform benefits</p>
+                  </div>
+                  
+                  <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20">
+                    <Star className="h-5 w-5 text-yellow-400 mb-2" />
+                    <h3 className="font-bold text-white">Gift Vouchers</h3>
+                    <p className="text-sm text-slate-300">For all participants</p>
+                  </div>
+                </div>
+                
+                <Link href="/sign-in">
+                  <Button className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2 shadow-lg shadow-orange-500/20 transition-all hover:scale-105">
+                    Join The Contest
+                    <ArrowRight className="ml-1 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+            
+            {/* Contest timer */}
+            <div className="absolute bottom-4 right-6 bg-black/30 backdrop-blur-md px-4 py-2 rounded-full">
+              <p className="text-xs text-yellow-300">Contest ends in: <span className="font-mono">7 days</span></p>
+            </div>
+          </div>
         </div>
 
         <div className="mt-20 flex flex-col items-center">
