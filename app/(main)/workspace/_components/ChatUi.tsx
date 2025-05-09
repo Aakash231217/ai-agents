@@ -371,7 +371,6 @@ function ChatUi() {
                 <div className="flex flex-col gap-3 w-full max-w-4xl mx-auto">
                     <div className="flex justify-between items-center px-2">
                         <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-500">Voice:</span>
                             <Select 
                                 value={voiceGender} 
                                 onValueChange={(val) => setVoiceGender(val as 'male' | 'female')}
@@ -391,7 +390,6 @@ function ChatUi() {
                         
                         <div className="flex items-center gap-2">
                             <div className="flex items-center">
-                                <span className="text-sm text-gray-500 mr-2">Auto-speak:</span>
                                 <Button
                                     variant={autoSpeak ? "default" : "outline"}
                                     size="sm"
