@@ -94,10 +94,7 @@ function Provider({
                                     height={40}
                                     className="rounded-full"
                                 />
-                                
-                                <button className="p-2 rounded-full hover:bg-gray-800 transition-colors">
-                                    <Settings size={20} />
-                                </button>
+                            
                             </div>
                         )}
                     </div>
