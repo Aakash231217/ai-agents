@@ -240,10 +240,29 @@ function ChatUi() {
         setMessages(newMessages);
 
         try {
-            const providerMap = { 1: "openai", 2: "claude", 3: "deepseek", 4: "mistral", 5: "gemini" };
+            // Handle both numeric IDs and string model names
+            let provider = "openai"; // Default provider
+            
+            if (typeof assistant.aiModelId === 'number') {
+                // Handle numeric model ID (1-5)
+                const providerMap = { 1: "openai", 2: "claude", 3: "deepseek", 4: "mistral", 5: "gemini" };
+                provider = providerMap[assistant.aiModelId as keyof typeof providerMap] || "openai";
+            } else if (typeof assistant.aiModelId === 'string') {
+                // Handle string model name
+                const modelNameMap: Record<string, string> = {
+                    "OpenAI": "openai",
+                    "Claude": "claude",
+                    "Deepseek": "deepseek",
+                    "Mistral": "mistral",
+                    "Google:Gemini": "gemini"
+                };
+                provider = modelNameMap[assistant.aiModelId] || "openai";
+            }
+            
+            console.log("Using AI provider:", provider, "(aiModelId:", assistant.aiModelId, ")");
             
             const response = await axios.post('/api/ai-model', {
-                provider: providerMap[assistant.aiModelId as keyof typeof providerMap],
+                provider,
                 messages: [
                     {
                         role: 'system',
@@ -456,3 +475,4 @@ function ChatUi() {
 }
 
 export default ChatUi;
+
