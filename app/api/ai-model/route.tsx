@@ -44,72 +44,57 @@ export async function POST(req: NextRequest) {
           "anthropic-version": "2023-06-01",
           "Content-Type": "application/json"
         },
-        body: {
-          model: "claude-3-5-sonnet-20240620",  // You can use another Claude model
-          messages: messages.map((msg: any) => ({
-            role: msg.role === "system" ? "system" : msg.role === "user" ? "user" : "assistant",
-            content: msg.content
-          })),
-          max_tokens: 1000
-        }
+        body: (() => {
+          // Handle system messages separately for Claude API
+          const systemMessages = messages.filter((msg: any) => msg.role === "system");
+          const nonSystemMessages = messages.filter((msg: any) => msg.role !== "system");
+          
+          const systemPrompt = systemMessages.map((msg: any) => msg.content).join("\n");
+          
+          return {
+            model: "claude-5-sonnet-20240229",  // Using Claude Sonnet model as requested
+            system: systemPrompt, // Claude uses a top-level system parameter
+            messages: nonSystemMessages.map((msg: any) => ({
+              role: msg.role === "user" ? "user" : "assistant",
+              content: msg.content
+            })),
+            max_tokens: 1000
+          };
+        })()
       },
       gemini: {
-        url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
+        url: "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent",
         headers: {
           "Content-Type": "application/json"
         },
         body: {
-          // For gemini, handle system prompts by prepending to the first user message
+          // For Gemini, prepend system messages to first user message
           contents: (() => {
             const systemMessages = messages.filter((msg: any) => msg.role === "system");
             const nonSystemMessages = messages.filter((msg: any) => msg.role !== "system");
             
+            // If there are system messages, prepend them to the first user message
             if (systemMessages.length > 0 && nonSystemMessages.length > 0) {
               const firstUserIndex = nonSystemMessages.findIndex((msg: any) => msg.role === "user");
               if (firstUserIndex !== -1) {
                 const systemContent = systemMessages.map((msg: any) => msg.content).join("\n");
-                nonSystemMessages[firstUserIndex].content = `Instructions: ${systemContent}\n\nMessage: ${nonSystemMessages[firstUserIndex].content}`;
+                nonSystemMessages[firstUserIndex] = {
+                  ...nonSystemMessages[firstUserIndex],
+                  content: `System Instructions: ${systemContent}\n\nUser Message: ${nonSystemMessages[firstUserIndex].content}`
+                };
               }
             }
             
+            // Convert to Gemini format
             return nonSystemMessages.map((msg: any) => ({
-              role: msg.role === "user" ? "USER" : "MODEL",
+              role: msg.role === "user" ? "user" : "model",
               parts: [{ text: msg.content }]
             }));
           })()
         },
         queryParams: `?key=${process.env.GOOGLE_API_KEY}`
       },
-      deepseek: {
-        url: "https://api.deepseek.com/v1/chat/completions",
-        headers: {
-          "Authorization": `Bearer ${process.env.DEEPSEEK_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: {
-          model: "deepseek-chat", // Use appropriate model name
-          messages: messages.map((msg: any) => ({
-            role: msg.role,
-            content: msg.content
-          })),
-          temperature: 0.7
-        }
-      },
-      mistral: {
-        url: "https://api.mistral.ai/v1/chat/completions",
-        headers: {
-          "Authorization": `Bearer ${process.env.MISTRAL_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: {
-          model: "mistral-large-latest", // Or specify another model
-          messages: messages.map((msg: any) => ({
-            role: msg.role,
-            content: msg.content
-          })),
-          temperature: 0.7
-        }
-      }
+      // Removed Deepseek and Mistral providers as requested by user
     };
 
     // Select the configuration based on the provider
