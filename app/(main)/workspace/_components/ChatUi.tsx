@@ -24,7 +24,7 @@ interface Assistant {
     id: string;
     image: any;
     userInstruction: string;
-    aiModelId: 1 | 2 | 3 | 4 | 5;
+    aiModelId: 1 | 2 | 3 ;
 }
 
 type MESSAGE = {
@@ -245,15 +245,13 @@ function ChatUi() {
             
             if (typeof assistant.aiModelId === 'number') {
                 // Handle numeric model ID (1-5)
-                const providerMap = { 1: "openai", 2: "claude", 3: "deepseek", 4: "mistral", 5: "gemini" };
+                const providerMap = { 1: "openai", 2: "claude", 3: "gemini"};
                 provider = providerMap[assistant.aiModelId as keyof typeof providerMap] || "openai";
             } else if (typeof assistant.aiModelId === 'string') {
                 // Handle string model name
                 const modelNameMap: Record<string, string> = {
                     "OpenAI": "openai",
                     "Claude": "claude",
-                    "Deepseek": "deepseek",
-                    "Mistral": "mistral",
                     "Google:Gemini": "gemini"
                 };
                 provider = modelNameMap[assistant.aiModelId] || "openai";
