@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
       case "claude":
         formattedResponse = {
           model: "claude",
-          response: data.content[0].text,
+          response: data.content, // FIXED: Use data.content (string) instead of data.content[0].text
           raw: data
         };
         break;
