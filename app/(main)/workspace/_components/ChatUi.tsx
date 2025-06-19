@@ -258,17 +258,17 @@ function ChatUi() {
             }
             
             console.log("Using AI provider:", provider, "(aiModelId:", assistant.aiModelId, ")");
+
+            // FIX: Use full message history except the last 'Loading...' placeholder
+            const filteredMessages = [
+                { role: 'system', content: `${assistant.instruction} ${assistant.userInstruction}`.trim() },
+                ...[...messages, { role: 'user', content: userInput }]
+                    .filter(m => m.content !== 'Loading...')
+            ];
             
             const response = await axios.post('/api/ai-model', {
                 provider,
-                messages: [
-                    {
-                        role: 'system',
-                        content: `${assistant.instruction} ${assistant.userInstruction}`.trim()
-                    },
-                    ...messages.filter(m => m.role !== 'assistant'),
-                    { role: 'user', content: userInput }
-                ]
+                messages: filteredMessages
             });
             
             const assistantResponse = response.data.response;
@@ -473,4 +473,3 @@ function ChatUi() {
 }
 
 export default ChatUi;
-

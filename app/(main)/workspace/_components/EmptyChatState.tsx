@@ -54,6 +54,13 @@ function EmptyChatState() {
   useEffect(() => {
     user && GetUserAssistants();
   }, [user]);
+
+  // Reset assistant when user logs out or changes
+  useEffect(() => {
+    if (!user) {
+      setAssistant(null);
+    }
+  }, [user, setAssistant]);
   
   // Filter assistants when search query changes
   useEffect(() => {
