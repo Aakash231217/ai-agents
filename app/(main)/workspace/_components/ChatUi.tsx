@@ -240,237 +240,225 @@ function ChatUi() {
         setMessages(newMessages);
 
         try {
-            // Handle both numeric IDs and string model names
-            let provider = "openai"; // Default provider
+            let provider = "openai";
             
             if (typeof assistant.aiModelId === 'number') {
-                // Handle numeric model ID (1-5)
                 const providerMap = { 1: "openai", 2: "claude", 3: "gemini"};
                 provider = providerMap[assistant.aiModelId as keyof typeof providerMap] || "openai";
-            } else if (typeof assistant.aiModelId === 'string') {
-                // Handle string model name
-                const modelNameMap: Record<string, string> = {
-                    "OpenAI": "openai",
-                    "Claude": "claude",
-                    "Google:Gemini": "gemini"
-                };
-                provider = modelNameMap[assistant.aiModelId] || "openai";
             }
-            
-            console.log("Using AI provider:", provider, "(aiModelId:", assistant.aiModelId, ")");
-            
-            const response = await axios.post('/api/ai-model', {
-                provider,
-                messages: [
-                    {
-                        role: 'system',
-                        content: `${assistant.instruction} ${assistant.userInstruction}`.trim()
-                    },
-                    ...messages.filter(m => m.role !== 'assistant'),
-                    { role: 'user', content: userInput }
-                ]
+
+            const response = await axios.post('/api/chat', {
+                messages: [...messages, { role: 'user', content: userInput }],
+                assistant: assistant,
+                provider: provider
             });
-            
-            const assistantResponse = response.data.response;
+
+            const assistantMessage = response.data.message;
             
             setMessages(prev => [
                 ...prev.slice(0, -1),
-                { role: 'assistant', content: assistantResponse }
+                { role: 'assistant', content: assistantMessage }
             ]);
-            
-            if (autoSpeak) {
-                speakText(assistantResponse);
+
+            if (autoSpeak && assistantMessage) {
+                setTimeout(() => speakText(assistantMessage), 100);
             }
-            
         } catch (error) {
-            const errorMessage = 'Serving another people right now !! Will be back ASAP';
+            console.error('Error sending message:', error);
             setMessages(prev => [
                 ...prev.slice(0, -1),
-                { role: 'assistant', content: errorMessage }
+                { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' }
             ]);
-            if (autoSpeak) {
-                speakText(errorMessage);
-            }
         } finally {
             setLoading(false);
         }
     };
 
-    const shouldShowEmptyState = !assistant || messages.length === 0;
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            onSendMessage();
+        }
+    };
+
+    if (!assistant) {
+        return <EmptyChatState />;
+    }
 
     return (
-        <div className="flex flex-col h-[calc(100vh-160px)] p-6 pb-0">
-            {shouldShowEmptyState && <EmptyChatState />}
-            
+        <div className="chat-container flex flex-col h-full max-h-screen">
+            {/* Header - responsive */}
+            <div className="chat-header flex items-center gap-3 p-3 sm:p-4 border-b bg-white sticky top-0 z-10">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden flex-shrink-0">
+                        <Image 
+                            src={assistant.image || DEFAULT_ASSISTANT_IMAGE} 
+                            alt={assistant.instruction}
+                            width={40}
+                            height={40}
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold text-sm sm:text-base truncate">{assistant.instruction}</h3>
+                        <p className="text-xs sm:text-sm text-gray-500 truncate">{assistant.userInstruction}</p>
+                    </div>
+                </div>
+                
+                {/* Voice controls - responsive */}
+                <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                    <Select value={voiceGender} onValueChange={(value: 'male' | 'female') => setVoiceGender(value)}>
+                        <SelectTrigger className="w-16 sm:w-20 h-8 text-xs">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="male">Male</SelectItem>
+                            <SelectItem value="female">Female</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setAutoSpeak(!autoSpeak)}
+                        className={`h-8 w-8 p-0 ${autoSpeak ? 'bg-blue-100' : ''}`}
+                    >
+                        {autoSpeak ? <Volume2 className="h-3 w-3 sm:h-4 sm:w-4" /> : <VolumeX className="h-3 w-3 sm:h-4 sm:w-4" />}
+                    </Button>
+                    
+                    {isSpeaking && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={stopSpeaking}
+                            className="h-8 w-8 p-0 bg-red-100"
+                        >
+                            <VolumeX className="h-3 w-3 sm:h-4 sm:w-4" />
+                        </Button>
+                    )}
+                </div>
+            </div>
+
+            {/* Messages area - responsive */}
             <div 
                 ref={chatRef}
-                className="flex-1 overflow-y-auto scrollbar-hide pr-4 mb-4 space-y-4"
+                className="chat-messages flex-1 overflow-y-auto p-3 sm:p-4 space-y-4"
             >
-                {messages.map((msg, index) => (
-                    <div 
-                        key={index}
-                        className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                        <div className={`max-w-[85%] flex ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'} gap-3`}>
-                            {msg.role === 'assistant' && (
-                                <div className="flex flex-col items-center gap-1">
-                                    <Image 
-                                        src={assistant?.image || DEFAULT_ASSISTANT_IMAGE}
-                                        alt="Assistant"
-                                        width={40}
-                                        height={40}
-                                        className="rounded-full object-cover w-10 h-10 flex-shrink-0"
-                                    />
-                                    {msg.content !== 'Loading...' && (
-                                        <Button
-                                            variant="ghost" 
-                                            size="icon" 
-                                            className="h-6 w-6"
-                                            onClick={() => speakText(msg.content)}
+                {messages.length === 0 ? (
+                    <div className="text-center text-gray-500 mt-8 sm:mt-12">
+                        <p className="text-sm sm:text-base">Start a conversation with {assistant.instruction}</p>
+                    </div>
+                ) : (
+                    messages.map((message, index) => (
+                        <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`max-w-[85%] sm:max-w-[70%] rounded-lg p-3 sm:p-4 ${
+                                message.role === 'user' 
+                                    ? 'bg-blue-500 text-white ml-auto' 
+                                    : 'bg-gray-100 text-gray-800'
+                            }`}>
+                                {message.role === 'assistant' ? (
+                                    <div className="prose prose-sm sm:prose max-w-none">
+                                        <ReactMarkdown
+                                            remarkPlugins={[remarkGfm]}
+                                            rehypePlugins={[rehypeHighlight]}
+                                            components={{
+                                                code: ({node, inline, className, children, ...props}) => {
+                                                    const match = /language-(\w+)/.exec(className || '');
+                                                    return !inline && match ? (
+                                                        <pre className="overflow-x-auto text-xs sm:text-sm">
+                                                            <code className={className} {...props}>
+                                                                {children}
+                                                            </code>
+                                                        </pre>
+                                                    ) : (
+                                                        <code className={`${className} text-xs sm:text-sm bg-gray-200 px-1 rounded`} {...props}>
+                                                            {children}
+                                                        </code>
+                                                    );
+                                                },
+                                                pre: ({children}) => (
+                                                    <div className="overflow-x-auto">
+                                                        <pre className="text-xs sm:text-sm">{children}</pre>
+                                                    </div>
+                                                )
+                                            }}
                                         >
-                                            <Volume2 size={16} />
-                                        </Button>
-                                    )}
-                                </div>
-                            )}
-                            <div 
-                                className={`p-3 rounded-lg ${
-                                    msg.role === 'user' 
-                                        ? 'bg-blue-100 dark:bg-blue-900 ml-12' 
-                                        : 'bg-gray-100 dark:bg-gray-800 mr-12'
-                                } break-words overflow-x-auto`}
-                            >
-                                {msg.content === 'Loading...' ? (
-                                    <Loader2Icon className="animate-spin" />
+                                            {message.content}
+                                        </ReactMarkdown>
+                                    </div>
                                 ) : (
-                                    <ReactMarkdown
-                                        remarkPlugins={[remarkGfm]}
-                                        rehypePlugins={[rehypeHighlight]}
-                                        components={{
-                                            h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mb-4" {...props} />,
-                                            h2: ({ node, ...props }) => <h2 className="text-xl font-semibold mb-3" {...props} />,
-                                            h3: ({ node, ...props }) => <h3 className="text-lg font-medium mb-2" {...props} />,
-                                            p: ({ node, ...props }) => <p className="mb-4 leading-relaxed" {...props} />,
-                                            code: ({ node, className, ...props }) => (
-                                                <code
-                                                    className={`${className} p-2 rounded-md bg-gray-800 text-white block overflow-x-auto text-sm`}
-                                                    {...props}
-                                                />
-                                            ),
-                                            strong: ({ node, ...props }) => <strong className="font-semibold" {...props} />,
-                                            em: ({ node, ...props }) => <em className="italic" {...props} />,
-                                            ul: ({ node, ...props }) => <ul className="list-disc pl-6 mb-4" {...props} />,
-                                            ol: ({ node, ...props }) => <ol className="list-decimal pl-6 mb-4" {...props} />,
-                                            li: ({ node, ...props }) => <li className="mb-2" {...props} />,
-                                            table: ({ node, ...props }) => (
-                                                <div className="overflow-x-auto">
-                                                    <table className="min-w-full border-collapse my-4" {...props} />
-                                                </div>
-                                            ),
-                                            th: ({ node, ...props }) => (
-                                                <th className="border-b dark:border-gray-700 p-2 text-left bg-gray-100 dark:bg-gray-700" {...props} />
-                                            ),
-                                            td: ({ node, ...props }) => (
-                                                <td className="border-b dark:border-gray-700 p-2" {...props} />
-                                            ),
-                                        }}
-                                    >
-                                        {msg.content}
-                                    </ReactMarkdown>
+                                    <p className="text-sm sm:text-base whitespace-pre-wrap">{message.content}</p>
                                 )}
                             </div>
                         </div>
-                    </div>
-                ))}
+                    ))
+                )}
             </div>
 
-            <div className="sticky bottom-0 bg-background pt-4 border-t">
-                <div className="flex flex-col gap-3 w-full max-w-4xl mx-auto">
-                    <div className="flex justify-between items-center px-2">
-                        <div className="flex items-center gap-2">
-                            <Select 
-                                value={voiceGender} 
-                                onValueChange={(val) => setVoiceGender(val as 'male' | 'female')}
-                            >
-                                <SelectTrigger className="w-32 h-8">
-                                    <SelectValue placeholder="Voice Gender" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="male">Male</SelectItem>
-                                    <SelectItem value="female">Female</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            {selectedVoice && (
-                                <span className="text-xs text-gray-500">{selectedVoice.name}</span>
-                            )}
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                            <div className="flex items-center">
-                                <Button
-                                    variant={autoSpeak ? "default" : "outline"}
-                                    size="sm"
-                                    onClick={() => setAutoSpeak(!autoSpeak)}
-                                    className="h-8"
-                                >
-                                    {autoSpeak ? (
-                                        <><Volume2 className="h-4 w-4 mr-2" />On</>
-                                    ) : (
-                                        <><VolumeX className="h-4 w-4 mr-2" />Off</>
-                                    )}
-                                </Button>
-                            </div>
-                            
-                            {isSpeaking && (
-                                <Button 
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={stopSpeaking}
-                                    className="h-8"
-                                >
-                                    <VolumeX className="h-4 w-4 mr-2" />
-                                    Stop
-                                </Button>
-                            )}
-                        </div>
-                    </div>
-                    
-                    <div className="flex gap-3 w-full">
-                        <Input 
-                            placeholder="Start Typing Here..."
+            {/* Input area - responsive sticky bottom */}
+            <div className="chat-input border-t bg-white p-3 sm:p-4 sticky bottom-0">
+                <div className="flex gap-2 sm:gap-3 items-end">
+                    <div className="flex-1 relative">
+                        <Input
                             value={input}
-                            disabled={loading || !assistant}
                             onChange={(e) => setInput(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && onSendMessage()}
-                            className="flex-1 rounded-full px-6 py-5 shadow-sm"
+                            onKeyPress={handleKeyPress}
+                            placeholder="Type your message..."
+                            disabled={loading}
+                            className="pr-10 sm:pr-12 text-sm sm:text-base min-h-[40px] sm:min-h-[44px] resize-none"
+                            style={{ paddingRight: '2.5rem' }}
                         />
                         
-                        <Button 
+                        {/* Voice input button - positioned inside input */}
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
                             onClick={toggleListening}
-                            disabled={loading || !assistant}
-                            variant={isListening ? "destructive" : "outline"}
-                            className="rounded-full h-12 w-12 p-3 shrink-0"
+                            disabled={loading}
+                            className={`absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 sm:h-8 sm:w-8 p-0 ${
+                                isListening ? 'bg-red-100 text-red-600' : 'hover:bg-gray-100'
+                            }`}
                         >
-                            {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-                        </Button>
-                        
-                        <Button 
-                            onClick={onSendMessage}
-                            disabled={loading || !assistant || !input.trim()}
-                            className="rounded-full h-12 w-12 p-3 shrink-0"
-                        >
-                            {loading ? (
-                                <Loader2Icon className="animate-spin h-5 w-5" />
-                            ) : (
-                                <Send className="h-5 w-5" />
-                            )}
+                            {isListening ? <MicOff className="h-3 w-3 sm:h-4 sm:w-4" /> : <Mic className="h-3 w-3 sm:h-4 sm:w-4" />}
                         </Button>
                     </div>
+                    
+                    {/* Send button */}
+                    <Button
+                        onClick={onSendMessage}
+                        disabled={loading || !input.trim()}
+                        size="sm"
+                        className="h-10 w-10 sm:h-11 sm:w-11 p-0 flex-shrink-0"
+                    >
+                        {loading ? (
+                            <Loader2Icon className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Send className="h-4 w-4" />
+                        )}
+                    </Button>
                 </div>
+                
+                {/* Status indicators - responsive */}
+                {(isListening || isSpeaking) && (
+                    <div className="flex items-center gap-2 mt-2 text-xs sm:text-sm text-gray-600">
+                        {isListening && (
+                            <span className="flex items-center gap-1">
+                                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                                Listening...
+                            </span>
+                        )}
+                        {isSpeaking && (
+                            <span className="flex items-center gap-1">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                                Speaking...
+                            </span>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
 }
 
 export default ChatUi;
-
