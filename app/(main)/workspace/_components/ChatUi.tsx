@@ -484,3 +484,448 @@ function ChatUi() {
 }
 
 export default ChatUi;
+"use client"
+import React, { useContext, useEffect, useRef, useState } from 'react'
+import EmptyChatState from './EmptyChatState'
+import { AssistantContext } from '@/context/AssistantContext';
+import { Input } from '@/components/ui/input';
+import { Loader2Icon, Send, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Image from 'next/image';
+import axios from 'axios';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeHighlight from 'rehype-highlight';
+import 'highlight.js/styles/atom-one-dark.css';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+interface Assistant {
+    instruction: string;
+    id: string;
+    image: any;
+    userInstruction: string;
+    aiModelId: 1 | 2 | 3 ;
+}
+
+type MESSAGE = {
+    role: string,
+    content: string,
+};
+
+const VOICE_OPTIONS = {
+  male: [
+    { name: "Alex", pitch: 0.8, rate: 1.0 },
+    { name: "Archiee", pitch: 0.7, rate: 0.9 },
+    { name: "Levi", pitch: 0.6, rate: 0.95 },
+    { name: "Harmozi", pitch: 0.5, rate: 0.93 }
+
+  ],
+  female: [
+    { name: "Lisa", pitch: 1.2, rate: 1.0 },
+    { name: "Mahira", pitch: 1.3, rate: 1.05 },
+    { name: "Heena", pitch: 1.1, rate: 0.95 },
+    { name: "Shalini", pitch: 1.4, rate: 1.03 }
+
+  ]
+};
+
+const getStoredMessages = (assistantId: string): MESSAGE[] => {
+    if (!assistantId) return [];
+    
+    const key = `assistant-${assistantId}`;
+    const storedData = localStorage.getItem(key);
+    
+    if (storedData) {
+      try {
+        const { messages, timestamp } = JSON.parse(storedData);
+        const threeDays = 3 * 24 * 60 * 60 * 1000;
+        
+        if (Date.now() - timestamp < threeDays) {
+          return messages;
+        }
+        localStorage.removeItem(key);
+      } catch (e) {
+        console.error('Error parsing stored messages:', e);
+      }
+    }
+    return [];
+};
+  
+const storeMessages = (assistantId: string, messages: MESSAGE[]) => {
+    if (!assistantId) return;
+    
+    const key = `assistant-${assistantId}`;
+    const data = {
+      messages,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(key, JSON.stringify(data));
+};
+
+const DEFAULT_ASSISTANT_IMAGE = '/bug-fixer.avif';
+
+function ChatUi() {
+    const [input, setInput] = useState<string>('');
+    const { assistant } = useContext(AssistantContext);
+    const [messages, setMessages] = useState<MESSAGE[]>([]);
+    const [loading, setLoading] = useState(false);
+    const chatRef = useRef<HTMLDivElement>(null);
+    
+    // Speech state management
+    const [isListening, setIsListening] = useState(false);
+    const [isSpeaking, setIsSpeaking] = useState(false);
+    const [voiceGender, setVoiceGender] = useState<'male' | 'female'>('male');
+    const [selectedVoice, setSelectedVoice] = useState<any>(null);
+    const [autoSpeak, setAutoSpeak] = useState(true);
+    const [currentUtterance, setCurrentUtterance] = useState<SpeechSynthesisUtterance | null>(null);
+    const recognitionRef = useRef<any>(null);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
+            const SpeechRecognition = (window as any).webkitSpeechRecognition;
+            recognitionRef.current = new SpeechRecognition();
+            recognitionRef.current.continuous = true;
+            recognitionRef.current.interimResults = true;
+            
+            recognitionRef.current.onresult = (event: any) => {
+                const transcript = Array.from(event.results)
+                    .map((result: any) => result[0])
+                    .map((result) => result.transcript)
+                    .join('');
+                setInput(transcript);
+            };
+            
+            recognitionRef.current.onerror = (event: any) => {
+                console.error('Speech recognition error', event);
+                setIsListening(false);
+            };
+        }
+
+        selectRandomVoice(voiceGender);
+        
+        return () => {
+            if (recognitionRef.current) {
+                recognitionRef.current.stop();
+            }
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        selectRandomVoice(voiceGender);
+    }, [voiceGender]);
+
+    useEffect(() => {
+        if (assistant?.id) {
+            const storedMessages = getStoredMessages(assistant.id);
+            setMessages(storedMessages);
+        } else {
+            setMessages([]);
+        }
+    }, [assistant?.id]);
+
+    useEffect(() => {
+        if (assistant?.id && messages.length > 0) {
+            storeMessages(assistant.id, messages);
+        }
+    }, [messages, assistant?.id]);
+
+    useEffect(() => {
+        if (chatRef.current) {
+            chatRef.current.scrollTop = chatRef.current.scrollHeight;
+        }
+    }, [messages]);
+    
+    const selectRandomVoice = (gender: 'male' | 'female') => {
+        const voices = VOICE_OPTIONS[gender];
+        const randomIndex = Math.floor(Math.random() * voices.length);
+        setSelectedVoice(voices[randomIndex]);
+    };
+    
+    const toggleListening = () => {
+        if (!recognitionRef.current) {
+            alert("Speech recognition not supported");
+            return;
+        }
+        
+        if (isListening) {
+            recognitionRef.current.stop();
+            setIsListening(false);
+        } else {
+            recognitionRef.current.start();
+            setIsListening(true);
+        }
+    };
+    
+    const speakText = (text: string) => {
+        if (!window.speechSynthesis) return;
+        
+        if (window.speechSynthesis.speaking) {
+            window.speechSynthesis.cancel();
+        }
+
+        const cleanText = text
+            .replace(/```[\s\S]*?```/g, "Code block removed for speech.")
+            .replace(/`([^`]+)`/g, "$1")
+            .replace(/\*\*([^*]+)\*\*/g, "$1")
+            .replace(/\*([^*]+)\*/g, "$1")
+            .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+            .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F1E0}-\u{1F1FF}\u{1F100}-\u{1F1FF}\u{1F200}-\u{1F2FF}\u{2100}-\u{214F}]/gu, "");
+
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        utterance.rate = selectedVoice.rate;
+        utterance.pitch = selectedVoice.pitch;
+
+        utterance.onstart = () => setIsSpeaking(true);
+        utterance.onend = () => {
+            setIsSpeaking(false);
+            setCurrentUtterance(null);
+        };
+        utterance.onerror = () => {
+            setIsSpeaking(false);
+            setCurrentUtterance(null);
+        };
+
+        setCurrentUtterance(utterance);
+        window.speechSynthesis.speak(utterance);
+    };
+    
+    const stopSpeaking = () => {
+        if (window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+            setIsSpeaking(false);
+            setCurrentUtterance(null);
+        }
+    };
+
+    const onSendMessage = async () => {
+        if (!input.trim() || loading || !assistant) return;
+        
+        const userInput = input.trim();
+        setInput('');
+        setLoading(true);
+        
+        if (isListening && recognitionRef.current) {
+            recognitionRef.current.stop();
+            setIsListening(false);
+        }
+
+        const newMessages = [
+            ...messages,
+            { role: 'user', content: userInput },
+            { role: 'assistant', content: 'Loading...' }
+        ];
+        setMessages(newMessages);
+
+        try {
+            let provider = "openai";
+            
+            if (typeof assistant.aiModelId === 'number') {
+                const providerMap = { 1: "openai", 2: "claude", 3: "gemini"};
+                provider = providerMap[assistant.aiModelId as keyof typeof providerMap] || "openai";
+            }
+
+            const response = await axios.post('/api/chat', {
+                messages: [...messages, { role: 'user', content: userInput }],
+                instruction: assistant.instruction,
+                userInstruction: assistant.userInstruction,
+                provider: provider
+            });
+
+            const assistantMessage = response.data.message;
+            
+            setMessages(prev => [
+                ...prev.slice(0, -1),
+                { role: 'assistant', content: assistantMessage }
+            ]);
+
+            if (autoSpeak && assistantMessage) {
+                setTimeout(() => speakText(assistantMessage), 500);
+            }
+        } catch (error) {
+            console.error('Error sending message:', error);
+            setMessages(prev => [
+                ...prev.slice(0, -1),
+                { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' }
+            ]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            onSendMessage();
+        }
+    };
+
+    if (!assistant) {
+        return <EmptyChatState />;
+    }
+
+    return (
+        <div className="chat-ui-container flex flex-col h-full max-h-screen">
+            {/* Header - responsive */}
+            <div className="chat-header flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 border-b bg-white sticky top-0 z-10 gap-3 sm:gap-0">
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden flex-shrink-0">
+                        <Image 
+                            src={assistant.image || DEFAULT_ASSISTANT_IMAGE} 
+                            alt="Assistant" 
+                            width={40} 
+                            height={40}
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                    <h2 className="text-sm sm:text-lg font-semibold truncate">{assistant.instruction}</h2>
+                </div>
+                
+                {/* Voice controls - responsive */}
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                    <div className="flex items-center gap-2">
+                        <Select value={voiceGender} onValueChange={(value: 'male' | 'female') => setVoiceGender(value)}>
+                            <SelectTrigger className="w-20 sm:w-24 h-8 text-xs">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="male">Male</SelectItem>
+                                <SelectItem value="female">Female</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setAutoSpeak(!autoSpeak)}
+                            className={`h-8 px-2 ${autoSpeak ? 'bg-blue-50' : ''}`}
+                        >
+                            {autoSpeak ? <Volume2 className="h-3 w-3" /> : <VolumeX className="h-3 w-3" />}
+                        </Button>
+                        
+                        {isSpeaking && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={stopSpeaking}
+                                className="h-8 px-2 bg-red-50"
+                            >
+                                Stop
+                            </Button>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Chat messages - responsive */}
+            <div 
+                ref={chatRef}
+                className="chat-messages flex-1 overflow-y-auto p-3 sm:p-4 space-y-4 min-h-0"
+            >
+                {messages.length === 0 ? (
+                    <div className="text-center text-gray-500 mt-8 sm:mt-16">
+                        <p className="text-sm sm:text-base">Start a conversation with your assistant!</p>
+                    </div>
+                ) : (
+                    messages.map((message, index) => (
+                        <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`max-w-[85%] sm:max-w-[70%] rounded-lg p-3 sm:p-4 ${
+                                message.role === 'user' 
+                                    ? 'bg-blue-500 text-white ml-4 sm:ml-8' 
+                                    : 'bg-gray-100 text-gray-800 mr-4 sm:mr-8'
+                            }`}>
+                                {message.role === 'assistant' ? (
+                                    <div className="prose prose-sm sm:prose max-w-none">
+                                        <ReactMarkdown
+                                            remarkPlugins={[remarkGfm]}
+                                            rehypePlugins={[rehypeHighlight]}
+                                            components={{
+                                                code: ({node, inline, className, children, ...props}) => {
+                                                    const match = /language-(\w+)/.exec(className || '');
+                                                    return !inline && match ? (
+                                                        <pre className="bg-gray-900 text-gray-100 p-2 sm:p-4 rounded overflow-x-auto text-xs sm:text-sm">
+                                                            <code className={className} {...props}>
+                                                                {children}
+                                                            </code>
+                                                        </pre>
+                                                    ) : (
+                                                        <code className="bg-gray-200 px-1 py-0.5 rounded text-xs sm:text-sm" {...props}>
+                                                            {children}
+                                                        </code>
+                                                    );
+                                                },
+                                                p: ({children}) => <p className="text-xs sm:text-sm mb-2 last:mb-0">{children}</p>,
+                                                h1: ({children}) => <h1 className="text-sm sm:text-lg font-bold mb-2">{children}</h1>,
+                                                h2: ({children}) => <h2 className="text-sm sm:text-base font-bold mb-2">{children}</h2>,
+                                                h3: ({children}) => <h3 className="text-xs sm:text-sm font-bold mb-2">{children}</h3>,
+                                                ul: ({children}) => <ul className="list-disc pl-4 sm:pl-6 mb-2 text-xs sm:text-sm">{children}</ul>,
+                                                ol: ({children}) => <ol className="list-decimal pl-4 sm:pl-6 mb-2 text-xs sm:text-sm">{children}</ol>,
+                                                li: ({children}) => <li className="mb-1">{children}</li>,
+                                            }}
+                                        >
+                                            {message.content}
+                                        </ReactMarkdown>
+                                    </div>
+                                ) : (
+                                    <p className="text-xs sm:text-sm whitespace-pre-wrap">{message.content}</p>
+                                )}
+                            </div>
+                        </div>
+                    ))
+                )}
+            </div>
+
+            {/* Input area - responsive */}
+            <div className="chat-input border-t bg-white p-3 sm:p-4 sticky bottom-0">
+                <div className="flex gap-2 sm:gap-3 items-end">
+                    <div className="flex-1 relative">
+                        <Input
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            onKeyPress={handleKeyPress}
+                            placeholder="Type your message..."
+                            disabled={loading}
+                            className="pr-10 sm:pr-12 text-sm sm:text-base min-h-[40px] sm:min-h-[44px] resize-none"
+                            style={{ paddingRight: '2.5rem' }}
+                        />
+                        
+                        {/* Voice input button - positioned inside input on mobile */}
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={toggleListening}
+                            disabled={loading}
+                            className={`absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 ${
+                                isListening ? 'bg-red-100 text-red-600' : 'hover:bg-gray-100'
+                            }`}
+                        >
+                            {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                        </Button>
+                    </div>
+                    
+                    <Button 
+                        onClick={onSendMessage} 
+                        disabled={loading || !input.trim()}
+                        className="h-10 w-10 sm:h-11 sm:w-11 p-0 flex-shrink-0"
+                    >
+                        {loading ? (
+                            <Loader2Icon className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Send className="h-4 w-4" />
+                        )}
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export default ChatUi;
