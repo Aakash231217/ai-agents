@@ -67,7 +67,7 @@ function AIAssistants() {
 
   const OnClickContinue = async () => {
     if (!user || !user._id) {
-      console.error("User is not logged in or missing ID");
+      console.error("User is not logged in");
       return;
     }
 
