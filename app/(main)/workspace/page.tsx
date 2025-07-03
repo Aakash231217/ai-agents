@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AssistantList from './_components/AssistantList';
 import AssistantSettings from './_components/AssistantSettings';
 import ChatUi from './_components/ChatUi';
@@ -9,6 +9,12 @@ import Image from 'next/image';
 export default function AiAssistantsPage() {
   const [showSidebar, setShowSidebar] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  
+  useEffect(() => {
+    // Reset sidebar and settings state on component mount to prevent stuck overlays
+    setShowSidebar(false);
+    setShowSettings(false);
+  }, []);
   
   return (
     <div className='h-screen w-full flex flex-col bg-black text-white'>
