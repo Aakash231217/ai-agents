@@ -52,10 +52,12 @@ function EmptyChatState() {
   
   // Fetch assistants when component mounts or user changes
   useEffect(() => {
-    user && GetUserAssistants();
-  }, [user]);
+    if (user) {
+      GetUserAssistants();
   
+    }
   // Filter assistants when search query changes
+  }, [user, convex]);
   useEffect(() => {
     if (searchQuery.trim() === '') {
       setFilteredList(assistantList);
