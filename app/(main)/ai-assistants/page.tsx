@@ -35,7 +35,7 @@ function AIAssistants() {
     if (user) {
       GetUserAssistants();
     }
-  }, [user]);
+  }, [user, convex, router]);
 
   const GetUserAssistants = async () => {
     if (!user) return;
