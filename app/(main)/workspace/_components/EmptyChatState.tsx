@@ -108,18 +108,18 @@ function EmptyChatState() {
   };
 
   return (
-    <div className='flex flex-col items-center justify-center min-h-[60vh] px-3 sm:px-4 lg:px-6 max-w-full'>
+    <div className='flex flex-col items-center justify-center min-h-[60vh] px-3 sm:px-4 lg:px-6 max-w-full w-full'>
       {/* Beta Disclaimer */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-xs sm:max-w-md lg:max-w-lg"
+        className="w-full max-w-xs sm:max-w-md lg:max-w-2xl xl:max-w-4xl"
       >
         <BetaDisclaimer />
       </motion.div>
       
-      <div className='mb-6 sm:mb-8 relative w-full max-w-xs sm:max-w-md lg:max-w-lg'>
+      <div className='mb-6 sm:mb-8 relative w-full max-w-xs sm:max-w-md lg:max-w-2xl xl:max-w-4xl'>
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -157,7 +157,7 @@ function EmptyChatState() {
       
       {!assistant?.id && (
         <motion.div 
-          className='mt-4 sm:mt-6 w-full max-w-xs sm:max-w-md lg:max-w-lg'
+          className='mt-4 sm:mt-6 w-full max-w-xs sm:max-w-md lg:max-w-2xl xl:max-w-4xl'
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
@@ -174,7 +174,7 @@ function EmptyChatState() {
           </div>
           
           {/* Assistant list */}
-          <ScrollArea className="h-[40vh] sm:h-[45vh] lg:h-[50vh] pr-2 -mr-2">
+           <ScrollArea className="h-[30vh] sm:h-[35vh] md:h-[40vh] lg:h-[45vh] xl:h-[50vh] pr-2 -mr-2">
             {filteredList.length === 0 ? (
               <div className="text-center py-6 text-gray-500 text-sm sm:text-base">
                 {searchQuery ? 'No assistants match your search' : 'No assistants yet'}
