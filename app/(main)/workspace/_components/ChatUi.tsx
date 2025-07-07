@@ -450,7 +450,7 @@ function ChatUi() {
                         onClick={onSendMessage} 
                         disabled={loading || !input.trim()}
                         size="sm"
-                        className="h-9 w-9 sm:h-11 sm:w-11 p-0 flex-shrink-0"
+                        className="h-10 w-10 sm:h-11 sm:w-11 p-0 flex-shrink-0"
                     >
                         {loading ? (
                             <Loader2Icon className="animate-spin" size={16} />
