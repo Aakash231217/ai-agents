@@ -353,7 +353,7 @@ function ChatUi() {
             {/* Messages area - responsive */}
             <div 
                 ref={chatRef}
-                className="chat-messages flex-1 overflow-y-auto p-2 sm:p-4 space-y-2 sm:space-y-4 min-h-0"
+                className="chat-messages flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 min-h-0"
             >
                 {messages.length === 0 ? (
                     <div className="text-center text-gray-500 mt-8">
