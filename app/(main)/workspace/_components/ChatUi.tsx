@@ -95,7 +95,8 @@ function ChatUi() {
     const [isListening, setIsListening] = useState(false);
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [voiceGender, setVoiceGender] = useState<'male' | 'female'>('male');
-    const [selectedVoice, setSelectedVoice] = useState<any>(null);
+    type VoiceOption = { name: string; pitch: number; rate: number; };
+const [selectedVoice, setSelectedVoice] = useState<VoiceOption | null>(null);
     const [autoSpeak, setAutoSpeak] = useState(true);
     const [currentUtterance, setCurrentUtterance] = useState<SpeechSynthesisUtterance | null>(null);
     const recognitionRef = useRef<any>(null);
