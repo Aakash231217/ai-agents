@@ -297,9 +297,9 @@ function ChatUi() {
     }
 
     return (
-        <div className="chat-container flex flex-col h-full max-h-screen">
+        <div className="chat-container flex flex-col h-full max-h-screen w-full">
             {/* Header - responsive */}
-            <div className="chat-header flex items-center gap-3 p-3 sm:p-4 border-b bg-white sticky top-0 z-10">
+            <div className="chat-header flex items-center gap-2 sm:gap-3 p-2 sm:p-4 border-b bg-white sticky top-0 z-10">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                     <Image 
                         src={assistant.image || DEFAULT_ASSISTANT_IMAGE} 
@@ -315,7 +315,7 @@ function ChatUi() {
                 </div>
                 
                 {/* Voice controls - responsive */}
-                <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 overflow-hidden">
                     <Select value={voiceGender} onValueChange={(value: 'male' | 'female') => setVoiceGender(value)}>
                         <SelectTrigger className="w-16 sm:w-20 h-8 text-xs">
                             <SelectValue />
@@ -353,8 +353,8 @@ function ChatUi() {
             {/* Messages area - responsive */}
             <div 
                 ref={chatRef}
-                className="chat-messages flex-1 overflow-y-auto p-3 sm:p-4 space-y-4"
-                style={{ maxHeight: 'calc(100vh - 140px)' }}
+                className="chat-messages flex-1 overflow-y-auto p-2 sm:p-4 space-y-3 sm:space-y-4"
+                style={{ maxHeight: 'calc(100vh - 120px)' }}
             >
                 {messages.length === 0 ? (
                     <div className="text-center text-gray-500 mt-8">
@@ -363,7 +363,7 @@ function ChatUi() {
                 ) : (
                     messages.map((message, index) => (
                         <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`max-w-[85%] sm:max-w-[70%] rounded-lg p-3 ${
+                            <div className={`max-w-[90%] sm:max-w-[70%] rounded-lg p-2 sm:p-3 ${
                                 message.role === 'user' 
                                     ? 'bg-blue-600 text-white ml-auto' 
                                     : 'bg-gray-100 text-gray-900'
@@ -419,8 +419,8 @@ function ChatUi() {
             </div>
 
             {/* Input area - responsive */}
-            <div className="chat-input border-t bg-white p-3 sm:p-4">
-                <div className="flex gap-2 items-end">
+            <div className="chat-input border-t bg-white p-2 sm:p-4">
+                <div className="flex gap-1 sm:gap-2 items-end">
                     <div className="flex-1 relative">
                         <Input
                             value={input}
