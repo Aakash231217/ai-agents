@@ -132,10 +132,11 @@ function ChatUi() {
             }
         };
     }, []);
-
-    useEffect(() => {
-        selectRandomVoice(voiceGender);
-    }, [voiceGender]);
+const selectRandomVoice = useCallback((gender: 'male' | 'female') => {
+    const voices = VOICE_OPTIONS[gender];
+    const randomIndex = Math.floor(Math.random() * voices.length);
+    setSelectedVoice(voices[randomIndex]);
+}, []);
 
     useEffect(() => {
         if (assistant?.id) {
